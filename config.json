@@ -1,0 +1,23 @@
+{
+	"socket": {
+		"host": "127.0.0.1",
+		"port": 12345,
+		"default_max_client": 100,
+		"key": 123456
+	},
+	"redis": {
+		"host": "127.0.0.1",
+		"port": 6379,
+		"db": 0
+	},
+	"tag": {
+		"online_max_time": 3,
+		"online_min_time": 3,
+		"workline_time": 0,
+		"workline_stop_time": 0.5,
+		"workline_max_time": 30,
+		"workline_min_time": 0.95,
+		"offline_max_time": 31
+	}
+
+}
