@@ -47,7 +47,7 @@ function main(){
 // 在架处理方法
 function online(ip){
 	var groupId;
-	rfid.on('dataGet', function(returnDatas){
+	rfid.on('onDataGet', function(returnDatas){
 		// console.log(returnDatas);
 		// Object.getOwnPropertyNames(returnDatas).length 
 		// 判断对象是否为空

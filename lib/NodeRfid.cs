@@ -236,10 +236,10 @@ namespace NodeRfid
 
             }//while循环
 
-            /*if (!stopInventoryFlag)
+            if (!stopInventoryFlag)
             {
-                this.dataCallback(this.tagList);
-            }*/
+                this.onDataGetCallback(this.tagList);
+            }
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace NodeRfid
 
                 if (!stopInventoryFlag)
                 {
-                    this.dataCallback(this.goneList);
+                    this.offDataCallback(this.goneList);
                 }
 
             }
