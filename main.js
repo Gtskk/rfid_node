@@ -1,10 +1,10 @@
 var cp = require('child_process'),
 	http = require('http');
 
-var socket = require('./socket.js'),
+var socket = require('./lib/socket.js'),
 	// monitor = require('./monitor.js'),
 	// rfid = require('./lib/rfid.js'),
-	tagCheck = require('./tagCheck.js');
+	tagCheck = require('./lib/tagCheck.js');
 
 var processlists = [socket, tagCheck];
 var processrun = [];
@@ -23,7 +23,7 @@ function spawn(service){
 }
 
 // 程序主函数
-function main(argv){
+function main(){
 	for (var i = 0; i < processlists.length; i++) {
 		spawn(processlists[i]);
 	}
@@ -36,4 +36,4 @@ function main(argv){
 	});
 }
 
-main(process.argv.slice(2));
+main();

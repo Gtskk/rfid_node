@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>RFID Documentation</title>
+    <meta name="keywords" content="RFID" />
+    <meta name="description" content="RFID package" />
+    <script src="assets/prettify.js"></script>
+    <script src="assets/jquery-1.8.2.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="assets/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="assets/base.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">RFID</a>
+        </div>
+      <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+          
+            <li>
+              <a href="./api.html">API Docs</a>
+            </li>
+          
+          
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div>
+    </nav>
+    <header class="jumbotron subhead">
+      <div class="container">
+        <h1>RFID <small>Version: 1.0.0 By @gtskk</small></h1>
+        <p class="lead">
+          RFID package
+        </p>
+      </div>
+    </header>
+
+<div class="container content">
+  <div class="row">
+    <div class="col-md-3 bs-docs-sidebar">
+      <ul class="nav nav-list bs-docs-sidenav affix">
+
+  <li>
+    <a href="#api_config"><i class="icon-chevron-right"></i>config</a>
+  </li>
+
+  <li>
+    <a href="#api_define"><i class="icon-chevron-right"></i>define</a>
+  </li>
+
+  <li>
+    <a href="#api_monitor"><i class="icon-chevron-right"></i>monitor</a>
+  </li>
+
+  <li>
+    <a href="#api_service"><i class="icon-chevron-right"></i>service</a>
+  </li>
+
+  <li>
+    <a href="#api_socket"><i class="icon-chevron-right"></i>socket</a>
+  </li>
+
+  <li>
+    <a href="#api_tagCheck"><i class="icon-chevron-right"></i>tagCheck</a>
+  </li>
+
+  <li>
+    <a href="#api_rfid/rfid"><i class="icon-chevron-right"></i>rfid/rfid</a>
+  </li>
+
+</ul>
+
+    </div>
+    <div class="col-md-9">
+      
+        <section id="api_config" class="api">
+  <h2>config: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#config_this_groups">groups</a>
+    </li>
+
+    <li>
+      <a href="#config_this_readers">readers</a>
+    </li>
+
+    <li>
+      <a href="#config_this_ants">ants</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="config_this_groups">
+    groups
+  </h3>
+  
+
+  <p>组数据<br />offline_max_time:   离架最大时间 [默认配置，在config.json中]<br />online_max_time:    在架最大时间<br />online_min_times:   在架最小次数<br />workline_min_time:  临架最小时间<br />workline_stop_time: 临架停留时间<br />workline_times:     临架停留时间<br />workline_max_time:  临架最大时间<br />workline_max_time:  临架次数,不用</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>属性</td>
+      <td>this.groups</td> 
+      <td>this</td>
+      <td>groups</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="config_this_readers">
+    readers
+  </h3>
+  
+
+  <p>读写器数据<br />readerIp: 读写器IP地址</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>属性</td>
+      <td>this.readers</td> 
+      <td>this</td>
+      <td>readers</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="config_this_ants">
+    ants
+  </h3>
+  
+
+  <p>读写器天线数据<br />groupId: 组ID<br />readerId: 读写器ID<br />antId: 天线ID(0-3)</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>属性</td>
+      <td>this.ants</td> 
+      <td>this</td>
+      <td>ants</td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_define" class="api">
+  <h2>define: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#define__path">path</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="define__path">
+    path
+  </h3>
+  
+
+  <p>系统常量</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>声明</td>
+      <td>path</td> 
+      <td></td>
+      <td>path</td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_monitor" class="api">
+  <h2>monitor: API索引</h2>
+  <ul class="indexs">
+  
+  </ul>
+  <hr />
+
+  
+
+  
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_service" class="api">
+  <h2>service: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#service__process">process</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="service__process">
+    process
+  </h3>
+  
+
+  <p>处理客户端传过来的数据，找到合适的指令进行处理获取返回值</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>process()</td> 
+      <td></td>
+      <td>process</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>data(Object)</td>
+      <td colspan="2">客户端传过来的数据</td>
+    </tr>
+  
+
+    <tr>
+      <td>返回</td>
+      <td>String</td>
+      <td colspan="2">返回标签列表的序列化字符串</td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_socket" class="api">
+  <h2>socket: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#socket__main">main</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="socket__main">
+    main
+  </h3>
+  
+
+  <p>socket服务创建模块</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>main()</td> 
+      <td></td>
+      <td>main</td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_tagCheck" class="api">
+  <h2>tagCheck: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#tagCheck__main">main</a>
+    </li>
+
+    <li>
+      <a href="#tagCheck__getGroupId">getGroupId</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="tagCheck__main">
+    main
+  </h3>
+  
+
+  <p>标签检查模块</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>main()</td> 
+      <td></td>
+      <td>main</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+
+  <p>setTimeout(function(){<br />                rfid.close();<br />                console.log(&quot;rfid Closed&quot;);<br />            }, 5000);</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="tagCheck__getGroupId">
+    getGroupId
+  </h3>
+  
+
+  <p>根据读写器ip和天线端口获取组ID</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>getGroupId()</td> 
+      <td></td>
+      <td>getGroupId</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>ip(String)</td>
+      <td colspan="2">读写器IP</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>ant(String)</td>
+      <td colspan="2">读写器天线端口号</td>
+    </tr>
+  
+
+    <tr>
+      <td>返回</td>
+      <td>Integer</td>
+      <td colspan="2">返回组ID或者NULL</td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_rfid/rfid" class="api">
+  <h2>rfid/rfid: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#rfid/rfid__RfidNodejs">RfidNodejs</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="rfid/rfid__RfidNodejs">
+    RfidNodejs
+  </h3>
+  
+
+  <p>通过edgejs控制RFID模块</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>RfidNodejs()</td> 
+      <td></td>
+      <td>RfidNodejs</td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+    </div>
+  </div>
+</div>
+      <footer class="footer">
+        <div class="container">
+          <p class="pull-right">
+            <a href="#">Back to top</a>
+          </p>
+          <p>此文档通过doxmate生成。主题借鉴Bootstrap API文档风格，注解基于<a href="https://github.com/visionmedia/dox">Dox</a>。欢迎关注doxmate作者<a href="http://weibo.com/shyvo" target="_blank">@朴灵</a></p>
+          <ul class="footer-links">
+            <li><a href="https://github.com/visionmedia/dox">Dox主页</a></li>
+            <li><a href="http://html5ify.com/doxmate">Doxmate主页</a></li>
+            <li><a href="https://github.com/JacksonTian/doxmate">Doxmate源码</a></li>
+            <li><a href="https://github.com/JacksonTian/doxmate/issues?state=open">提交bug</a></li>
+          </ul>
+      </div>
+    </footer>
+    <script>
+      $(function() {
+        $('pre').addClass('prettyprint');
+        $('td pre').removeClass('prettyprint');
+        prettyPrint();
+        var $window = $(window);
+        $('.bs-docs-sidenav').affix({
+          offset: {
+            top: function () {
+              return $window.width() <= 980 ? 290 : 210
+            },
+            bottom: 270
+          }
+        });
+        $(".content").find('h1, h2, h3, h4, h5, h6').each(function () {
+          var node = $(this);
+          // 总是设置id
+          node.attr("id", node.data('id') || "index_" + node.text());
+          node.css("paddingTop", 50);
+        });
+      });
+    </script>
+  
+  </body>
+</html>
+

@@ -4,6 +4,7 @@
   "description": "RFID package",
   "main": "main.js",
   "scripts": {
+    "start": "node main",
     "test": "./node_modules/.bin/mocha"
   },
   "keywords": [
@@ -16,7 +17,7 @@
   "author": "gtskk",
   "license": "MIT",
   "directories": {
-    "doc": "docs",
+    "doc": "doc",
     "test": "test"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "mocha": "^2.0.1",
-    "should": "^4.1.0"
+    "should": "^4.1.0",
+    "log4js": "^0.6.21"
   }
 }
