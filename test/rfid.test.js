@@ -1,4 +1,4 @@
-var Rfid = require('../lib/rfid');
+var Rfid = require('../lib/rfid/rfid');
 var should = require('should');
 
 describe('tests/rfid.test.js', function(){

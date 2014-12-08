@@ -37,7 +37,7 @@ namespace NodeRfid
             if (this.jwReader != null && this.setReader((object[])input.antInfos))
             {
 
-                this.logCallback("读写器连接成功啦！^-^");
+                this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
                 // 数据
                 this.startInventory();
@@ -74,7 +74,7 @@ namespace NodeRfid
 
             if (result != Result.OK)
             {
-                //return "不能打开读写器";
+                this.logCallback("不能打开读写器");
                 return null;
             }
             #endregion
@@ -119,7 +119,7 @@ namespace NodeRfid
             result = this.jwReader.RFID_Set_Config(rs);
             if (result != Result.OK)
             {
-                //return "读写器设置失败";
+                this.logCallback("读写器设置失败");
                 return false;
             }
             #endregion
