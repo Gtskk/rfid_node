@@ -1,5 +1,9 @@
 var cp = require('child_process'),
-	http = require('http');
+	http = require('http'),
+	redis = require('redis');
+
+// 引入日志记录
+var logger = require('./util/logger');
 
 var socket = require('./lib/socket.js'),
 	// monitor = require('./monitor.js'),
@@ -24,6 +28,33 @@ function spawn(service){
 
 // 程序主函数
 function main(){
+
+	var r = redis.createClient();
+	// 监听连接错误
+	r.on('error', function(er)
+	{
+		logger.debuglogger.debug(er.stack);
+	})
+
+	// 清除redis内存数据库数据
+	r.keys('*', function(err, keys){
+		keys.forEach(function (key, pos) 
+		{
+            r.del(key, function(err, o) 
+            {
+	          	if (err) 
+	          	{
+	                return console.error('没有' + key);
+	            }
+	            if (pos === (keys.length - 1)) 
+	            {
+	                r.quit();
+	            }
+            });
+        });
+        logger.infologger.info('redis内存数据清理成功');
+	});
+
 	for (var i = 0; i < processlists.length; i++) {
 		spawn(processlists[i]);
 	}
@@ -33,6 +64,13 @@ function main(){
 			processrun[j].kill();
 		}
 		process.exit(0);
+	});
+
+	// 监听异常
+	process.on('uncaughtException', function(er)
+	{
+		logger.errorlogger.error(er.stack);
+		process.exit(1);
 	});
 }
 
