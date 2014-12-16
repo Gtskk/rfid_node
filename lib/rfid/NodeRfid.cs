@@ -211,30 +211,34 @@ namespace NodeRfid
             while (inventoryTagQueue.Count > 0)
             {
                 Tag packet = inventoryTagQueue.Dequeue();
-                String epc = packet.EPC;
-
-                // 移除又能被盘点上的标签
-                if(this.goneList.ContainsKey(epc)){
-                    this.goneList.Remove(epc);
-                }
-
-                if (this.tagList.ContainsKey(epc))
+                if(packet != null)
                 {
-                    IDictionary<string, object> currentTag = (IDictionary<string, object>)this.tagList[epc];
-                    currentTag["time"] = DateTime.Now;
-                }
-                else
-                {
-                    #region 新增列表
-                    Dictionary<string, object> tagData = new Dictionary<string, object>();
-                    DateTime dt = DateTime.Now;
-                    tagData["time"] = dt;
-                    tagData["data"] = packet;
+                    String epc = packet.EPC;
 
-                    this.tagList.Add(packet.EPC, tagData);
+                    // 移除又能被盘点上的标签
+                    if(this.goneList.ContainsKey(epc)){
+                        this.goneList.Remove(epc);
+                    }
 
-                    this.actual_read_count++;
-                    #endregion
+                    if (this.tagList.ContainsKey(epc))
+                    {
+                        IDictionary<string, object> currentTag = new Dictionary<string, object>();
+                        currentTag = (IDictionary<string, object>)this.tagList[epc];
+                        currentTag["time"] = DateTime.Now;
+                    }
+                    else
+                    {
+                        #region 新增列表
+                        IDictionary<string, object> tagData = new Dictionary<string, object>();
+                        DateTime dt = DateTime.Now;
+                        tagData["time"] = dt;
+                        tagData["data"] = packet;
+
+                        this.tagList.Add(packet.EPC, tagData);
+
+                        this.actual_read_count++;
+                        #endregion
+                    }
                 }
 
             }//while循环

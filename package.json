@@ -25,11 +25,11 @@
     "edge-cs": "^0.2.7",
     "events": "^1.0.2",
     "redis": "^0.12.1",
-    "util": "^0.10.3"
+    "util": "^0.10.3",
+    "log4js": "^0.6.21"
   },
   "devDependencies": {
     "mocha": "^2.0.1",
-    "should": "^4.1.0",
-    "log4js": "^0.6.21"
+    "should": "^4.1.0"
   }
 }
