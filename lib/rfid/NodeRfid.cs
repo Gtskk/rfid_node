@@ -208,40 +208,40 @@ namespace NodeRfid
         /// </summary>
         private void updateInventoryGridList()
         {
-            while (inventoryTagQueue.Count > 0)
+            Tag packet = null;
+            if(inventoryTagQueue.Count > 0)
             {
-                Tag packet = inventoryTagQueue.Dequeue();
-                if(packet != null)
-                {
-                    String epc = packet.EPC;
+                packet = inventoryTagQueue.Dequeue();
+            } 
+            if(packet != null)
+            {
+                String epc = packet.EPC;
 
-                    // 移除又能被盘点上的标签
-                    if(this.goneList.ContainsKey(epc)){
-                        this.goneList.Remove(epc);
-                    }
-
-                    if (this.tagList.ContainsKey(epc))
-                    {
-                        IDictionary<string, object> currentTag = new Dictionary<string, object>();
-                        currentTag = (IDictionary<string, object>)this.tagList[epc];
-                        currentTag["time"] = DateTime.Now;
-                    }
-                    else
-                    {
-                        #region 新增列表
-                        IDictionary<string, object> tagData = new Dictionary<string, object>();
-                        DateTime dt = DateTime.Now;
-                        tagData["time"] = dt;
-                        tagData["data"] = packet;
-
-                        this.tagList.Add(packet.EPC, tagData);
-
-                        this.actual_read_count++;
-                        #endregion
-                    }
+                // 移除又能被盘点上的标签
+                if(this.goneList.ContainsKey(epc)){
+                    this.goneList.Remove(epc);
                 }
 
-            }//while循环
+                if (this.tagList.ContainsKey(epc))
+                {
+                    IDictionary<string, object> currentTag = new Dictionary<string, object>();
+                    currentTag = (IDictionary<string, object>)this.tagList[epc];
+                    currentTag["time"] = DateTime.Now;
+                }
+                else
+                {
+                    #region 新增列表
+                    IDictionary<string, object> tagData = new Dictionary<string, object>();
+                    DateTime dt = DateTime.Now;
+                    tagData["time"] = dt;
+                    tagData["data"] = packet;
+
+                    this.tagList.Add(packet.EPC, tagData);
+
+                    this.actual_read_count++;
+                    #endregion
+                }
+            }
 
             if (!stopInventoryFlag)
             {
