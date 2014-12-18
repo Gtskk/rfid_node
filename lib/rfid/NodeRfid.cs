@@ -208,38 +208,41 @@ namespace NodeRfid
         /// </summary>
         private void updateInventoryGridList()
         {
-            Tag packet = null;
-            if(inventoryTagQueue.Count > 0)
+            while(inventoryTagQueue.Count > 0)
             {
-                packet = inventoryTagQueue.Dequeue();
-            } 
-            if(packet != null)
-            {
-                String epc = packet.EPC;
-
-                // 移除又能被盘点上的标签
-                if(this.goneList.ContainsKey(epc)){
-                    this.goneList.Remove(epc);
-                }
-
-                if (this.tagList.ContainsKey(epc))
+                Tag packet = null;
+                if(inventoryTagQueue.Count > 0)
                 {
-                    IDictionary<string, object> currentTag = new Dictionary<string, object>();
-                    currentTag = (IDictionary<string, object>)this.tagList[epc];
-                    currentTag["time"] = DateTime.Now;
-                }
-                else
+                    packet = inventoryTagQueue.Dequeue();
+                } 
+                if(packet != null)
                 {
-                    #region 新增列表
-                    IDictionary<string, object> tagData = new Dictionary<string, object>();
-                    DateTime dt = DateTime.Now;
-                    tagData["time"] = dt;
-                    tagData["data"] = packet;
+                    String epc = packet.EPC;
 
-                    this.tagList.Add(packet.EPC, tagData);
+                    // 移除又能被盘点上的标签
+                    if(this.goneList.ContainsKey(epc)){
+                        this.goneList.Remove(epc);
+                    }
 
-                    this.actual_read_count++;
-                    #endregion
+                    if (this.tagList.ContainsKey(epc))
+                    {
+                        IDictionary<string, object> currentTag = new Dictionary<string, object>();
+                        currentTag = (IDictionary<string, object>)this.tagList[epc];
+                        currentTag["time"] = DateTime.Now;
+                    }
+                    else
+                    {
+                        #region 新增列表
+                        IDictionary<string, object> tagData = new Dictionary<string, object>();
+                        DateTime dt = DateTime.Now;
+                        tagData["time"] = dt;
+                        tagData["data"] = packet;
+
+                        this.tagList.Add(packet.EPC, tagData);
+
+                        this.actual_read_count++;
+                        #endregion
+                    }
                 }
             }
 
@@ -259,7 +262,7 @@ namespace NodeRfid
                 foreach(KeyValuePair<string, object> tag in this.tagList)
                 {
                     IDictionary<string, object> val = (IDictionary<string, object>)tag.Value;
-                    if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 1500)
+                    if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 1000)
                     {
                         if (this.goneList.ContainsKey(tag.Key))
                         {
@@ -272,14 +275,24 @@ namespace NodeRfid
                     }
                 }
 
-                // 移除被拿走的标签
-                foreach(string epc in this.goneList.Keys)
+                string[] keyEpcs = new string[this.goneList.Count];
+                this.goneList.Keys.CopyTo(keyEpcs, 0);
+                foreach(string keyEpc in keyEpcs)
                 {
-                    if (this.tagList.ContainsKey(epc))
+                    // 从在架标签中移除被拿走的标签
+                    if (this.tagList.ContainsKey(keyEpc))
                     {
-                        this.tagList.Remove(epc);
+                        this.tagList.Remove(keyEpc);
+                    }
+
+                    // 从离架标签中移除被拿走特定时间后没拿回来的标签
+                    IDictionary<string, object> val = (IDictionary<string, object>)this.goneList[keyEpc];
+                    if(UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 12000)
+                    {
+                        this.goneList.Remove(keyEpc);
                     }
                 }
+
                 Thread.Sleep(100);
 
                 if (!stopInventoryFlag)
