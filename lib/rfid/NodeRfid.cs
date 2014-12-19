@@ -210,45 +210,47 @@ namespace NodeRfid
         {
             while(inventoryTagQueue.Count > 0)
             {
-                Tag packet = null;
-                if(inventoryTagQueue.Count > 0)
+                lock(this.tagList)
                 {
-                    packet = inventoryTagQueue.Dequeue();
-                } 
-                if(packet != null)
-                {
-                    String epc = packet.EPC;
-
-                    // 移除又能被盘点上的标签
-                    if(this.goneList.ContainsKey(epc)){
-                        this.goneList.Remove(epc);
-                    }
-
-                    if (this.tagList.ContainsKey(epc))
+                    Tag packet = null;
+                    if(inventoryTagQueue.Count > 0)
                     {
-                        IDictionary<string, object> currentTag = new Dictionary<string, object>();
-                        currentTag = (IDictionary<string, object>)this.tagList[epc];
-                        currentTag["time"] = DateTime.Now;
-                    }
-                    else
+                        packet = inventoryTagQueue.Dequeue();
+                    } 
+                    if(packet != null)
                     {
-                        #region 新增列表
-                        IDictionary<string, object> tagData = new Dictionary<string, object>();
-                        DateTime dt = DateTime.Now;
-                        tagData["time"] = dt;
-                        tagData["data"] = packet;
+                        String epc = packet.EPC;
 
-                        this.tagList.Add(packet.EPC, tagData);
+                        // 移除又能被盘点上的标签
+                        if(this.goneList.ContainsKey(epc)){
+                            this.goneList.Remove(epc);
+                        }
 
-                        this.actual_read_count++;
-                        #endregion
+                        if (this.tagList.ContainsKey(epc))
+                        {
+                            IDictionary<string, object> currentTag = (IDictionary<string, object>)this.tagList[epc];
+                            currentTag["time"] = DateTime.Now;
+                            this.tagList[epc] = currentTag;
+                        }
+                        else
+                        {
+                            #region 新增列表
+                            IDictionary<string, object> tagData = new Dictionary<string, object>();
+                            tagData["time"] = DateTime.Now;
+                            tagData["data"] = packet;
+
+                            this.tagList.Add(packet.EPC, tagData);
+
+                            this.actual_read_count++;
+                            #endregion
+                        }
                     }
                 }
             }
 
             if (!stopInventoryFlag)
             {
-                this.onDataCallback(this.tagList);
+                this.offDataCallback(this.goneList);
             }
         }
 
@@ -259,46 +261,50 @@ namespace NodeRfid
         {
             while (!stopInventoryFlag)//未停止
             {
-                foreach(KeyValuePair<string, object> tag in this.tagList)
+                lock(this.tagList)
                 {
-                    IDictionary<string, object> val = (IDictionary<string, object>)tag.Value;
-                    if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 1000)
+                    string[] tagkeyEpcs = new string[this.tagList.Count];
+                    this.tagList.Keys.CopyTo(tagkeyEpcs, 0);
+                    foreach(string tagkeyEpc in tagkeyEpcs)
                     {
-                        if (this.goneList.ContainsKey(tag.Key))
+                        IDictionary<string, object> val = (IDictionary<string, object>)this.tagList[tagkeyEpc];
+                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 800)
                         {
-                            this.goneList[tag.Key] = tag.Value;
-                        }
-                        else
-                        {
-                            this.goneList.Add(tag.Key, tag.Value);
+                            if (this.goneList.ContainsKey(tagkeyEpc))
+                            {
+                                val["time"] = DateTime.Now;
+                                this.goneList[tagkeyEpc] = val;
+                            }
+                            else
+                            {
+                                val["time"] = DateTime.Now;
+                                this.goneList.Add(tagkeyEpc, val);
+                            }
                         }
                     }
-                }
 
-                string[] keyEpcs = new string[this.goneList.Count];
-                this.goneList.Keys.CopyTo(keyEpcs, 0);
-                foreach(string keyEpc in keyEpcs)
-                {
-                    // 从在架标签中移除被拿走的标签
-                    if (this.tagList.ContainsKey(keyEpc))
+                    string[] keyEpcs = new string[this.goneList.Count];
+                    this.goneList.Keys.CopyTo(keyEpcs, 0);
+                    foreach(string keyEpc in keyEpcs)
                     {
-                        this.tagList.Remove(keyEpc);
-                    }
+                        // 从在架标签中移除被拿走的标签
+                        if (this.tagList.ContainsKey(keyEpc))
+                        {
+                            this.tagList.Remove(keyEpc);
+                        }
 
-                    // 从离架标签中移除被拿走特定时间后没拿回来的标签
-                    IDictionary<string, object> val = (IDictionary<string, object>)this.goneList[keyEpc];
-                    if(UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 12000)
-                    {
-                        this.goneList.Remove(keyEpc);
+                        // 从离架标签中移除被拿走特定时间后没拿回来的标签
+                        IDictionary<string, object> val = (IDictionary<string, object>)this.goneList[keyEpc];
+                        if(UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 12000)
+                        {
+                            this.goneList.Remove(keyEpc);
+                        }
                     }
                 }
 
                 Thread.Sleep(100);
 
-                if (!stopInventoryFlag)
-                {
-                    this.offDataCallback(this.goneList);
-                }
+                this.onDataCallback(this.tagList);
 
             }
         }
