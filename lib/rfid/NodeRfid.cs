@@ -282,7 +282,10 @@ namespace NodeRfid
                             }
                         }
                     }
+                }
 
+                lock(this.goneList)
+                {
                     string[] keyEpcs = new string[this.goneList.Count];
                     this.goneList.Keys.CopyTo(keyEpcs, 0);
                     foreach(string keyEpc in keyEpcs)
@@ -295,7 +298,7 @@ namespace NodeRfid
 
                         // 从离架标签中移除被拿走特定时间后没拿回来的标签
                         IDictionary<string, object> val = (IDictionary<string, object>)this.goneList[keyEpc];
-                        if(UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 12000)
+                        if(UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 30000)
                         {
                             this.goneList.Remove(keyEpc);
                         }
