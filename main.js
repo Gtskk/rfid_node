@@ -49,6 +49,7 @@ function main(){
 	            if (pos === (keys.length - 1)) 
 	            {
 	                r.quit();
+	                r = null;
 	            }
             });
         });

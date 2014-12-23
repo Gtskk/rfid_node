@@ -15,10 +15,9 @@ namespace NodeRfid
         private Queue<Tag> inventoryTagQueue = new Queue<Tag>();//盘点到Tag队列列表
         Dictionary<string, object> tagList = new Dictionary<string, object>();//Tag列表
         Dictionary<string, object> goneList = new Dictionary<string, object>();//Tag列表
-        UInt64 actual_read_count = 0;//实际读取数量
         private bool stopInventoryFlag = false;//是否停止盘点标志
 
-        private delegate void UHFOperDelegate();//UHF操作跨线程委托类
+        //private delegate void UHFOperDelegate();//UHF操作跨线程委托类
         private JWReader jwReader = null;
 
         private Func<object, Task<object>> logCallback;
@@ -154,7 +153,6 @@ namespace NodeRfid
         {
             inventoryTagQueue.Clear();
             tagList.Clear();
-            actual_read_count = 0;
         }
 
 
@@ -192,14 +190,14 @@ namespace NodeRfid
                 Thread.Sleep(100);
             }
 
-            DateTime dt = DateTime.Now;
+            /*DateTime dt = DateTime.Now;
             while (true)
             {
                 updateInventoryGridList();
                 //500毫秒内确定没有包了 防止线程提前结束 有些盘点包还没处理完 可保证该线程最后结束。
                 if (inventoryTagQueue.Count == 0 && UtilD.DateDiffMillSecond(DateTime.Now, dt) > 500)
                     break;
-            }
+            }*/
         }
 
 
@@ -239,9 +237,7 @@ namespace NodeRfid
                             tagData["time"] = DateTime.Now;
                             tagData["data"] = packet;
 
-                            this.tagList.Add(packet.EPC, tagData);
-
-                            this.actual_read_count++;
+                            this.tagList.Add(epc, tagData);
                             #endregion
                         }
                     }
