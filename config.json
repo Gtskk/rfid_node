@@ -19,6 +19,6 @@
 		"workline_min_time": 0.95,
 		"offline_max_time": 31
 	},
-	"webFlag": true
+	"webFlag": false
 
 }

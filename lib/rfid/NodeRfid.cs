@@ -107,12 +107,12 @@ namespace NodeRfid
             rs.RSSI_Filter.Enable = true;
             rs.RSSI_Filter.RSSIValue = (float)-70;
 
-            rs.Speed_Mode = SpeedMode.SPEED_FASTEST;
+            rs.Speed_Mode = SpeedMode.SPEED_POWERSAVE;
 
 
             rs.Tag_Group = new TagGroup();
             rs.Tag_Group.SessionTarget = SessionTarget.A;
-            rs.Tag_Group.SearchMode = SearchMode.DUAL_TARGET;
+            rs.Tag_Group.SearchMode = SearchMode.SINGLE_TARGET;
             rs.Tag_Group.Session = Session.S0;
 
             result = this.jwReader.RFID_Set_Config(rs);
@@ -164,7 +164,10 @@ namespace NodeRfid
         private void TagsReport(object sender, TagsEventArgs args)
         {
             Tag tag = args.tag;
-            inventoryTagQueue.Enqueue(tag);//回调函数事情越少越好。
+            lock(this.tagList)
+            {
+                inventoryTagQueue.Enqueue(tag);//回调函数事情越少越好。
+            }
         }
 
 
@@ -187,7 +190,7 @@ namespace NodeRfid
             while (!stopInventoryFlag)//未停止
             {
                 updateInventoryGridList();
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
 
             /*DateTime dt = DateTime.Now;

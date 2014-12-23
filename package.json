@@ -23,9 +23,7 @@
   "dependencies": {
     "edge": "^0.9.3",
     "edge-cs": "^0.2.7",
-    "events": "^1.0.2",
     "redis": "^0.12.1",
-    "util": "^0.10.3",
     "log4js": "^0.6.21"
   },
   "devDependencies": {
