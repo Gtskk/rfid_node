@@ -24,19 +24,24 @@ namespace NodeRfid
         private Func<object, Task<object>> onDataCallback;
         private Func<object, Task<object>> offDataCallback;
 
+        private string host;
+
         /// <summary>
         /// 打开读写器
         /// </summary>
         public async Task<object> Open(dynamic input)
         {
-            this.jwReader = this.initConnect(input);
             this.logCallback = (Func<object, Task<object>>)input.logCallback;
+            this.jwReader = this.initConnect(input);
             this.onDataCallback = (Func<object, Task<object>>)input.onDataCallback;
             this.offDataCallback = (Func<object, Task<object>>)input.offDataCallback;
             if (this.jwReader != null && this.setReader((object[])input.antInfos))
             {
 
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
+
+                // 关联读写器IP
+                this.host = input.host;
 
                 // 数据
                 this.startInventory();
@@ -77,6 +82,7 @@ namespace NodeRfid
                 return null;
             }
             #endregion
+
             return jwReader;
         }
 
@@ -238,6 +244,7 @@ namespace NodeRfid
                             #region 新增列表
                             IDictionary<string, object> tagData = new Dictionary<string, object>();
                             tagData["time"] = DateTime.Now;
+                            tagData["host"] = this.host;
                             tagData["data"] = packet;
 
                             this.tagList.Add(epc, tagData);
@@ -277,6 +284,7 @@ namespace NodeRfid
                             else
                             {
                                 val["time"] = DateTime.Now;
+                                val["host"] = this.host;
                                 this.goneList.Add(tagkeyEpc, val);
                             }
                         }
