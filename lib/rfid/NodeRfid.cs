@@ -219,19 +219,15 @@ namespace NodeRfid
             {
                 lock(this.tagList)
                 {
-                    Tag packet = null;
                     if(inventoryTagQueue.Count > 0)
                     {
-                        packet = inventoryTagQueue.Dequeue();
-                    } 
-                    if(packet != null)
-                    {
+                        Tag packet = inventoryTagQueue.Dequeue();
                         String epc = packet.EPC;
 
                         // 移除又能被盘点上的标签
                         if(this.goneList.ContainsKey(epc)){
                             this.goneList.Remove(epc);
-                        }
+                        }    
 
                         if (this.tagList.ContainsKey(epc))
                         {
@@ -244,6 +240,7 @@ namespace NodeRfid
                             #region 新增列表
                             IDictionary<string, object> tagData = new Dictionary<string, object>();
                             tagData["time"] = DateTime.Now;
+                            tagData["checkTimes"] = 0;
                             tagData["host"] = this.host;
                             tagData["data"] = packet;
 
@@ -274,19 +271,19 @@ namespace NodeRfid
                     foreach(string tagkeyEpc in tagkeyEpcs)
                     {
                         IDictionary<string, object> val = (IDictionary<string, object>)this.tagList[tagkeyEpc];
-                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 800)
+                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 100)
                         {
-                            if (this.goneList.ContainsKey(tagkeyEpc))
+                            this.logCallback(val["checkTimes"]);
+                            val["checkTimes"] = (int)val["checkTimes"] + 1;
+                            val["time"] = DateTime.Now;
+                            if((int)val["checkTimes"] > 2)
                             {
-                                val["time"] = DateTime.Now;
                                 this.goneList[tagkeyEpc] = val;
+                                // 从在架标签中移除被拿走的标签
+                                this.tagList.Remove(tagkeyEpc);
                             }
-                            else
-                            {
-                                val["time"] = DateTime.Now;
-                                val["host"] = this.host;
-                                this.goneList.Add(tagkeyEpc, val);
-                            }
+                            this.tagList[tagkeyEpc] = val;
+                            
                         }
                     }
                 }
@@ -297,11 +294,6 @@ namespace NodeRfid
                     this.goneList.Keys.CopyTo(keyEpcs, 0);
                     foreach(string keyEpc in keyEpcs)
                     {
-                        // 从在架标签中移除被拿走的标签
-                        if (this.tagList.ContainsKey(keyEpc))
-                        {
-                            this.tagList.Remove(keyEpc);
-                        }
 
                         // 从离架标签中移除被拿走特定时间后没拿回来的标签
                         IDictionary<string, object> val = (IDictionary<string, object>)this.goneList[keyEpc];
@@ -312,7 +304,7 @@ namespace NodeRfid
                     }
                 }
 
-                Thread.Sleep(100);
+                Thread.Sleep(50);
 
                 this.onDataCallback(this.tagList);
 
