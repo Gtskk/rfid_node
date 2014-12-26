@@ -11,20 +11,11 @@ namespace NodeRfid
 
     class Startup
     {
-        private object lockObj = new object();//线程同步锁
-        private Queue<Tag> inventoryTagQueue = new Queue<Tag>();//盘点到Tag队列列表
-        Dictionary<string, object> tagList = new Dictionary<string, object>();//Tag列表
-        Dictionary<string, object> goneList = new Dictionary<string, object>();//Tag列表
-        private bool stopInventoryFlag = false;//是否停止盘点标志
-
-        //private delegate void UHFOperDelegate();//UHF操作跨线程委托类
         private JWReader jwReader = null;
 
         private Func<object, Task<object>> logCallback;
         private Func<object, Task<object>> onDataCallback;
         private Func<object, Task<object>> offDataCallback;
-
-        private string host;
 
         /// <summary>
         /// 打开读写器
@@ -32,19 +23,19 @@ namespace NodeRfid
         public async Task<object> Open(dynamic input)
         {
             this.logCallback = (Func<object, Task<object>>)input.logCallback;
-            this.jwReader = this.initConnect(input);
+            JWReader jwRe = this.initConnect(input);
             this.onDataCallback = (Func<object, Task<object>>)input.onDataCallback;
             this.offDataCallback = (Func<object, Task<object>>)input.offDataCallback;
-            if (this.jwReader != null && this.setReader((object[])input.antInfos))
+            if (jwRe != null && this.setReader((object[])input.antInfos, jwRe))
             {
 
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
                 // 关联读写器IP
-                this.host = input.host;
+                ReaderData readerData = new ReaderData(input.host, jwRe, this.logCallback, this.onDataCallback, this.offDataCallback);
 
-                // 数据
-                this.startInventory();
+                // 开始盘点
+                readerData.startInventory();
 
                 return true;
             }
@@ -73,8 +64,8 @@ namespace NodeRfid
         {
             #region 连接模块
             Result result = Result.OK;
-            this.jwReader = new JWReader(input.host, input.port);
-            result = jwReader.RFID_Open();//连接UHF模块
+            JWReader jw = new JWReader(input.host, input.port);
+            result = jw.RFID_Open();//连接UHF模块
 
             if (result != Result.OK)
             {
@@ -83,13 +74,13 @@ namespace NodeRfid
             }
             #endregion
 
-            return jwReader;
+            return jw;
         }
 
         /// <summary>
         /// 配置读写器
         /// </summary>
-        private bool setReader(object[] antInfos)
+        private bool setReader(object[] antInfos, JWReader jwRe)
         {
             #region 配置模块
             Result result = Result.OK;
@@ -113,7 +104,7 @@ namespace NodeRfid
             rs.RSSI_Filter.Enable = true;
             rs.RSSI_Filter.RSSIValue = (float)-70;
 
-            rs.Speed_Mode = SpeedMode.SPEED_POWERSAVE;
+            rs.Speed_Mode = SpeedMode.SPEED_FASTEST;
 
 
             rs.Tag_Group = new TagGroup();
@@ -121,7 +112,7 @@ namespace NodeRfid
             rs.Tag_Group.SearchMode = SearchMode.SINGLE_TARGET;
             rs.Tag_Group.Session = Session.S0;
 
-            result = this.jwReader.RFID_Set_Config(rs);
+            result = jwRe.RFID_Set_Config(rs);
             if (result != Result.OK)
             {
                 this.logCallback("读写器设置失败");
@@ -132,23 +123,60 @@ namespace NodeRfid
             return true;
         }
 
+    }
+
+
+
+    // 读写器数据类
+    class ReaderData
+    {
+        Dictionary<string, object> tagList = new Dictionary<string, object>();//Tag列表
+        Dictionary<string, object> goneList = new Dictionary<string, object>();//Tag列表
+
+        private Queue<Tag> inventoryTagQueue = new Queue<Tag>();//盘点到Tag队列列表
+
+        private bool stopInventoryFlag = false;//是否停止盘点标志
+
+        private string host;
+
+        private JWReader jwReader = null;
+
+        private Func<object, Task<object>> logCallback;
+        private Func<object, Task<object>> onDataCallback;
+        private Func<object, Task<object>> offDataCallback;
+
+        public ReaderData(string h, JWReader j, Func<object, Task<object>> l,Func<object, Task<object>> on, Func<object, Task<object>> off)
+        {
+            host = h;
+            jwReader = j;
+            logCallback = l;
+            onDataCallback = on;
+            offDataCallback = off;
+        }
+
+
         /// <summary>
         /// 启动盘点
         /// </summary>
-        private void startInventory()
+        public void startInventory()
         {
             clearInventoryData();//清空盘点数据
 
             stopInventoryFlag = false;
 
             Thread inventoryThread = new Thread(inventory);//盘点线程
+            inventoryThread.IsBackground=true;
             inventoryThread.Start();
 
             Thread updateThread = new Thread(updateList);//更新列表线程
+            updateThread.IsBackground=true;
             updateThread.Start();
 
             Thread checkGoneThread = new Thread(checkGone);//检查标签是否别拿走线程
+            checkGoneThread.IsBackground=true;;
             checkGoneThread.Start();
+
+
         }
 
 
@@ -170,10 +198,7 @@ namespace NodeRfid
         private void TagsReport(object sender, TagsEventArgs args)
         {
             Tag tag = args.tag;
-            lock(this.tagList)
-            {
-                inventoryTagQueue.Enqueue(tag);//回调函数事情越少越好。
-            }
+            inventoryTagQueue.Enqueue(tag);//回调函数事情越少越好。
         }
 
 
@@ -186,6 +211,17 @@ namespace NodeRfid
             //盘点
             jwReader.RFID_Start_Inventory();
         }
+
+
+        /// <summary>
+        /// 停止盘点
+        /// </summary>
+        /*private void stopBtn_Click()
+        {
+            jwReader.RFID_Stop_Inventory();//停止当前UHF操作
+            jwReader.TagsReported -= TagsReport;
+            stopInventoryFlag = true;
+        }*/
 
 
         /// <summary>
@@ -208,7 +244,6 @@ namespace NodeRfid
                     break;
             }*/
         }
-
 
         /// <summary>
         /// 更新列表
@@ -253,8 +288,20 @@ namespace NodeRfid
 
             if (!stopInventoryFlag)
             {
-                this.offDataCallback(this.goneList);
+                Thread callback_thread=new Thread(new ParameterizedThreadStart (my_onDataCallback));
+                callback_thread.IsBackground=true;
+                callback_thread.Start(this.tagList);
+                //this.onDataCallback(this.tagList);
             }
+
+
+        }
+
+
+        void my_onDataCallback(object taglist)
+        {
+            this.logCallback((Dictionary<string, object> )tagList);
+            onDataCallback((Dictionary<string, object> )taglist);
         }
 
         /// <summary>
@@ -271,13 +318,13 @@ namespace NodeRfid
                     foreach(string tagkeyEpc in tagkeyEpcs)
                     {
                         IDictionary<string, object> val = (IDictionary<string, object>)this.tagList[tagkeyEpc];
-                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 100)
+                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 800)
                         {
-                            this.logCallback(val["checkTimes"]);
                             val["checkTimes"] = (int)val["checkTimes"] + 1;
                             val["time"] = DateTime.Now;
                             if((int)val["checkTimes"] > 2)
                             {
+                                val["checkTimes"] = 0;
                                 this.goneList[tagkeyEpc] = val;
                                 // 从在架标签中移除被拿走的标签
                                 this.tagList.Remove(tagkeyEpc);
@@ -304,23 +351,22 @@ namespace NodeRfid
                     }
                 }
 
-                Thread.Sleep(50);
+                //this.offDataCallback(this.goneList);
+                
+                Thread callback_thread=new Thread(new ParameterizedThreadStart (my_offDataCallback));
+                callback_thread.IsBackground=true;
+                callback_thread.Start(this.goneList);
 
-                this.onDataCallback(this.tagList);
 
             }
         }
 
-
-        /// <summary>
-        /// 停止盘点
-        /// </summary>
-        private void stopBtn_Click()
+        void my_offDataCallback(object gonelist)
         {
-            jwReader.RFID_Stop_Inventory();//停止当前UHF操作
-            jwReader.TagsReported -= TagsReport;
-            stopInventoryFlag = true;
+            offDataCallback((Dictionary<string, object> )gonelist);
         }
+
+
     }
 
     class UtilD
