@@ -100,11 +100,13 @@ namespace NodeRfid
 
             rs.Region_List = RegionList.CCC;
 
-            rs.RSSI_Filter = new RSSIFilter();
-            rs.RSSI_Filter.Enable = true;
-            rs.RSSI_Filter.RSSIValue = (float)-70;
+            rs.Speed_Mode = SpeedMode.SPEED_NORMAL;
 
-            rs.Speed_Mode = SpeedMode.SPEED_FASTEST;
+            #region 设置RSSI 过滤
+            rs.RSSI_Filter =new RSSIFilter();
+            rs.RSSI_Filter.Enable =true;
+            rs.RSSI_Filter.RSSIValue = (float)-55.4;
+            #endregion
 
 
             rs.Tag_Group = new TagGroup();
@@ -300,7 +302,6 @@ namespace NodeRfid
 
         void my_onDataCallback(object taglist)
         {
-            this.logCallback((Dictionary<string, object> )tagList);
             onDataCallback((Dictionary<string, object> )taglist);
         }
 
