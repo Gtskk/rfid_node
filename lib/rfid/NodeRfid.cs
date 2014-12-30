@@ -26,7 +26,7 @@ namespace NodeRfid
             JWReader jwRe = this.initConnect(input);
             this.onDataCallback = (Func<object, Task<object>>)input.onDataCallback;
             this.offDataCallback = (Func<object, Task<object>>)input.offDataCallback;
-            if (jwRe != null && this.setReader((object[])input.antInfos, jwRe))
+            if (jwRe != null && this.setReader((object[])input.antInfos, (float)input.rssi, (float)input.frequency, jwRe))
             {
 
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
@@ -80,7 +80,7 @@ namespace NodeRfid
         /// <summary>
         /// 配置读写器
         /// </summary>
-        private bool setReader(object[] antInfos, JWReader jwRe)
+        private bool setReader(object[] antInfos, float rssi, float frequency, JWReader jwRe)
         {
             #region 配置模块
             Result result = Result.OK;
@@ -100,12 +100,12 @@ namespace NodeRfid
 
             rs.Region_List = RegionList.CCC;
 
-            rs.Speed_Mode = SpeedMode.SPEED_NORMAL;
+            rs.Speed_Mode = SpeedMode.SPEED_POWERSAVE;
 
             #region 设置RSSI 过滤
             rs.RSSI_Filter =new RSSIFilter();
             rs.RSSI_Filter.Enable =true;
-            rs.RSSI_Filter.RSSIValue = (float)-55.4;
+            rs.RSSI_Filter.RSSIValue = rssi;
             #endregion
 
 
@@ -270,6 +270,8 @@ namespace NodeRfid
                         {
                             IDictionary<string, object> currentTag = (IDictionary<string, object>)this.tagList[epc];
                             currentTag["time"] = DateTime.Now;
+                            tagData["checkTimes"] = 0;
+                            currentTag["count"] = (int)currentTag["count"] + 1;
                             this.tagList[epc] = currentTag;
                         }
                         else
@@ -278,6 +280,7 @@ namespace NodeRfid
                             IDictionary<string, object> tagData = new Dictionary<string, object>();
                             tagData["time"] = DateTime.Now;
                             tagData["checkTimes"] = 0;
+                            tagData["count"] = 0;
                             tagData["host"] = this.host;
                             tagData["data"] = packet;
 
@@ -286,16 +289,12 @@ namespace NodeRfid
                         }
                     }
                 }
-            }
 
-            if (!stopInventoryFlag)
-            {
-                Thread callback_thread=new Thread(new ParameterizedThreadStart (my_onDataCallback));
+                Thread callback_thread=new Thread(new ParameterizedThreadStart(my_onDataCallback));
                 callback_thread.IsBackground=true;
                 callback_thread.Start(this.tagList);
                 //this.onDataCallback(this.tagList);
             }
-
 
         }
 
@@ -319,7 +318,7 @@ namespace NodeRfid
                     foreach(string tagkeyEpc in tagkeyEpcs)
                     {
                         IDictionary<string, object> val = (IDictionary<string, object>)this.tagList[tagkeyEpc];
-                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 800)
+                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 600)
                         {
                             val["checkTimes"] = (int)val["checkTimes"] + 1;
                             val["time"] = DateTime.Now;
@@ -354,7 +353,7 @@ namespace NodeRfid
 
                 //this.offDataCallback(this.goneList);
                 
-                Thread callback_thread=new Thread(new ParameterizedThreadStart (my_offDataCallback));
+                Thread callback_thread=new Thread(new ParameterizedThreadStart(my_offDataCallback));
                 callback_thread.IsBackground=true;
                 callback_thread.Start(this.goneList);
 
@@ -364,7 +363,7 @@ namespace NodeRfid
 
         void my_offDataCallback(object gonelist)
         {
-            offDataCallback((Dictionary<string, object> )gonelist);
+            offDataCallback((Dictionary<string, object>)gonelist);
         }
 
 
