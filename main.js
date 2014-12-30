@@ -1,16 +1,10 @@
 var cp = require('child_process'),
-	http = require('http'),
 	redis = require('redis');
 
 // 引入日志记录
 var logger = require('./util/logger');
 
-var socket = require('./lib/socket.js'),
-	// monitor = require('./monitor.js'),
-	// rfid = require('./lib/rfid.js'),
-	tagCheck = require('./lib/tagCheck.js');
-
-var processlists = [socket, tagCheck];
+var processlists = ['./lib/socket.js', './lib/tagCheck.js'];
 var processrun = [];
 
 //守护进程函数
@@ -18,6 +12,18 @@ function spawn(service){
 	var child = cp.spawn('node', [service]);
 
 	processrun.push(child);
+
+	child.stdout.on('data', function (data) {
+	    console.log(data.toString());
+	});
+
+	child.stderr.on('data', function (data) {
+	    console.log('stderr: ' + data);
+	});
+
+	child.on('close', function (code) {
+	    console.log('子进程退出，状态码' + code);
+	});
 
 	child.on('exit', function(code){
 		if(code != 0){
