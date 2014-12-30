@@ -270,7 +270,7 @@ namespace NodeRfid
                         {
                             IDictionary<string, object> currentTag = (IDictionary<string, object>)this.tagList[epc];
                             currentTag["time"] = DateTime.Now;
-                            tagData["checkTimes"] = 0;
+                            currentTag["checkTimes"] = 0;
                             currentTag["count"] = (int)currentTag["count"] + 1;
                             this.tagList[epc] = currentTag;
                         }
@@ -290,7 +290,7 @@ namespace NodeRfid
                     }
                 }
 
-                Thread callback_thread=new Thread(new ParameterizedThreadStart(my_onDataCallback));
+                Thread callback_thread=new Thread(new ParameterizedThreadStart (my_onDataCallback));
                 callback_thread.IsBackground=true;
                 callback_thread.Start(this.tagList);
                 //this.onDataCallback(this.tagList);
@@ -353,7 +353,7 @@ namespace NodeRfid
 
                 //this.offDataCallback(this.goneList);
                 
-                Thread callback_thread=new Thread(new ParameterizedThreadStart(my_offDataCallback));
+                Thread callback_thread=new Thread(new ParameterizedThreadStart (my_offDataCallback));
                 callback_thread.IsBackground=true;
                 callback_thread.Start(this.goneList);
 
@@ -363,7 +363,7 @@ namespace NodeRfid
 
         void my_offDataCallback(object gonelist)
         {
-            offDataCallback((Dictionary<string, object>)gonelist);
+            offDataCallback((Dictionary<string, object> )gonelist);
         }
 
 
