@@ -1,7 +1,7 @@
 {
   "name": "RFID",
   "version": "1.0.0",
-  "description": "RFID package",
+  "description": "RFID package with nodejs",
   "main": "main.js",
   "scripts": {
     "start": "node main",
