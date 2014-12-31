@@ -14,15 +14,15 @@ function spawn(service){
 	processrun.push(child);
 
 	child.stdout.on('data', function (data) {
-	    console.log(data.toString());
+		logger.infologger.info(data.toString());
 	});
 
 	child.stderr.on('data', function (data) {
-	    console.log('stderr: ' + data);
+	    logger.errorlogger.error('子进程中存在错误，错误信息为：' + data);
 	});
 
 	child.on('close', function (code) {
-	    console.log('子进程退出，状态码' + code);
+		logger.errorlogger.error('子进程退出，状态码' + code);
 	});
 
 	child.on('exit', function(code){
