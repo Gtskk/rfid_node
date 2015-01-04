@@ -14,8 +14,6 @@ namespace NodeRfid
         private JWReader jwReader = null;
 
         private Func<object, Task<object>> logCallback;
-        private Func<object, Task<object>> onDataCallback;
-        private Func<object, Task<object>> offDataCallback;
 
         /// <summary>
         /// 打开读写器
@@ -24,15 +22,13 @@ namespace NodeRfid
         {
             this.logCallback = (Func<object, Task<object>>)input.logCallback;
             JWReader jwRe = this.initConnect(input);
-            this.onDataCallback = (Func<object, Task<object>>)input.onDataCallback;
-            this.offDataCallback = (Func<object, Task<object>>)input.offDataCallback;
             if (jwRe != null && this.setReader((object[])input.antInfos, (float)input.rssi, (float)input.frequency, jwRe))
             {
 
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
                 // 关联读写器IP
-                ReaderData readerData = new ReaderData(input.host, jwRe, this.logCallback, this.onDataCallback, this.offDataCallback);
+                ReaderData readerData = new ReaderData(input.host, jwRe, this.logCallback, (Func<object, Task<object>>)input.onDataCallback, (Func<object, Task<object>>)input.offDataCallback);
 
                 // 开始盘点
                 readerData.startInventory();
@@ -100,7 +96,7 @@ namespace NodeRfid
 
             rs.Region_List = RegionList.CCC;
 
-            rs.Speed_Mode = SpeedMode.SPEED_POWERSAVE;
+            rs.Speed_Mode = SpeedMode.SPEED_FASTEST;
 
             #region 设置RSSI 过滤
             rs.RSSI_Filter =new RSSIFilter();
@@ -189,6 +185,7 @@ namespace NodeRfid
         {
             inventoryTagQueue.Clear();
             tagList.Clear();
+            goneList.Clear();
         }
 
 
@@ -254,7 +251,7 @@ namespace NodeRfid
         {
             while(inventoryTagQueue.Count > 0)
             {
-                lock(this.tagList)
+                lock(tagList)
                 {
                     if(inventoryTagQueue.Count > 0)
                     {
@@ -293,7 +290,6 @@ namespace NodeRfid
                 Thread callback_thread=new Thread(new ParameterizedThreadStart (my_onDataCallback));
                 callback_thread.IsBackground=true;
                 callback_thread.Start(this.tagList);
-                //this.onDataCallback(this.tagList);
             }
 
         }
@@ -311,17 +307,18 @@ namespace NodeRfid
         {
             while (!stopInventoryFlag)//未停止
             {
-                lock(this.tagList)
+                lock(tagList)
                 {
                     string[] tagkeyEpcs = new string[this.tagList.Count];
                     this.tagList.Keys.CopyTo(tagkeyEpcs, 0);
                     foreach(string tagkeyEpc in tagkeyEpcs)
                     {
                         IDictionary<string, object> val = (IDictionary<string, object>)this.tagList[tagkeyEpc];
-                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 600)
+                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 600 && (int)val["count"] > 30)
                         {
                             val["checkTimes"] = (int)val["checkTimes"] + 1;
                             val["time"] = DateTime.Now;
+                            this.tagList[tagkeyEpc] = val;
                             if((int)val["checkTimes"] > 2)
                             {
                                 val["checkTimes"] = 0;
@@ -329,13 +326,12 @@ namespace NodeRfid
                                 // 从在架标签中移除被拿走的标签
                                 this.tagList.Remove(tagkeyEpc);
                             }
-                            this.tagList[tagkeyEpc] = val;
                             
                         }
                     }
                 }
 
-                lock(this.goneList)
+                lock(goneList)
                 {
                     string[] keyEpcs = new string[this.goneList.Count];
                     this.goneList.Keys.CopyTo(keyEpcs, 0);

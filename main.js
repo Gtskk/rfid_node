@@ -14,7 +14,7 @@ function spawn(service){
 	processrun.push(child);
 
 	child.stdout.on('data', function (data) {
-		logger.infologger.info(data.toString());
+		console.log(data.toString());
 	});
 
 	child.stderr.on('data', function (data) {

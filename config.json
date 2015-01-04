@@ -1,6 +1,6 @@
 {
 	"socket": {
-		"host": "172.16.13.34",
+		"host": "172.16.13.162",
 		"port": 12345,
 		"default_max_client": 100,
 		"key": 123456
