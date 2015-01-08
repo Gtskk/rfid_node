@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!-- Log4net配置设定 -->
+
+<log4net>
+
+  <appender name="RollingLogFileAppender" type="log4net.Appender.RollingFileAppender">
+    <!--RollingFileAppender将日志以回滚文件的形式写到文件中-->
+
+    <file value="D:/project/RFID/logs/uhf.log" />
+    <!--输出日志文件的路径-->
+
+    <appendToFile value="true" />
+    <!--输出日志时自动向后追加-->
+
+    <rollingStyle value="Composite" />
+
+    <datePattern value=".yyyyMMdd" />
+    <!--输出日期格式-->
+
+    <maxSizeRollBackups value="3" />
+    <!--日志最大个数-->
+
+    <maximumFileSize value="1MB" />
+    <!--单个日志的最大容量-->
+
+    <staticLogFileName value="true" />
+    <!--true表示当前最新日志文件名永远为file节中-->
+
+    <layout type="log4net.Layout.PatternLayout">
+
+      <conversionPattern value="%date %-5level -%m%n" />
+
+    </layout>
+
+  </appender>
+
+  <root>
+
+    <level value="DEBUG" />
+
+    <appender-ref ref="RollingLogFileAppender" />
+
+  </root>
+
+</log4net>
+
+
