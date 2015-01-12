@@ -59,7 +59,7 @@ function main(){
 	            }
             });
         });
-        logger.infologger.info('redis内存数据清理成功');
+        logger.debuglogger.debug('redis内存数据清理成功');
 	});
 
 	for (var i = 0; i < processlists.length; i++) {

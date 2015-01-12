@@ -249,11 +249,11 @@ namespace NodeRfid
         /// </summary>
         private void updateInventoryGridList()
         {
-            lock (tagList)
+            while (inventoryTagQueue.Count > 0)
             {
-                while (inventoryTagQueue.Count > 0)
+                if (inventoryTagQueue.Count > 0)
                 {
-                    if (inventoryTagQueue.Count > 0)
+                    lock (tagList)
                     {
                         Tag packet = inventoryTagQueue.Dequeue();
                         String epc = packet.EPC;
@@ -268,7 +268,6 @@ namespace NodeRfid
                         {
                             IDictionary<string, object> currentTag = (IDictionary<string, object>)this.tagList[epc];
                             currentTag["time"] = DateTime.Now;
-                            currentTag["checkTimes"] = 0;
                             currentTag["count"] = (int)currentTag["count"] + 1;
                             this.tagList[epc] = currentTag;
                         }
@@ -277,7 +276,6 @@ namespace NodeRfid
                             #region 新增列表
                             IDictionary<string, object> tagData = new Dictionary<string, object>();
                             tagData["time"] = DateTime.Now;
-                            tagData["checkTimes"] = 0;
                             tagData["count"] = 0;
                             tagData["host"] = this.host;
                             tagData["data"] = packet;
@@ -286,26 +284,23 @@ namespace NodeRfid
                             #endregion
                         }
                     }
+                }
 
-                    //Thread callback_thread=new Thread(new ParameterizedThreadStart (my_onDataCallback));
-                    //callback_thread.IsBackground=true;
-                    //callback_thread.Start(this.tagList);
-                }
-                if (this.tagList.Count > 0)
-                {
-                    Thread callback_thread = new Thread(new ParameterizedThreadStart(my_onDataCallback));
-                    callback_thread.IsBackground = true;
-                    callback_thread.Start(this.tagList);
-                }
+                //Thread callback_thread=new Thread(new ParameterizedThreadStart (my_onDataCallback));
+                //callback_thread.IsBackground=true;
+                //callback_thread.Start(this.tagList);
             }
+            
+            my_onDataCallback(this.tagList);
 
         }
 
 
-        void my_onDataCallback(object taglist)
+        private async Task my_onDataCallback(object taglist)
         {
-            onDataCallback((Dictionary<string, object> )taglist);
+            await onDataCallback((Dictionary<string, object> )taglist);
         }
+
 
         /// <summary>
         /// 检查标签是否被拿走
@@ -322,18 +317,12 @@ namespace NodeRfid
                     foreach (string tagkeyEpc in tagkeyEpcs)
                     {
                         IDictionary<string, object> val = (IDictionary<string, object>)this.tagList[tagkeyEpc];
-                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 600 && (int)val["count"] > 30)
+                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 300 && (int)val["count"] > 10)
                         {
-                            val["checkTimes"] = (int)val["checkTimes"] + 1;
                             val["time"] = DateTime.Now;
-                            this.tagList[tagkeyEpc] = val;
-                            if ((int)val["checkTimes"] > 2)
-                            {
-                                val["checkTimes"] = 0;
-                                this.goneList[tagkeyEpc] = val;
-                                // 从在架标签中移除被拿走的标签
-                                this.tagList.Remove(tagkeyEpc);
-                            }
+                            this.goneList[tagkeyEpc] = val;
+                            // 从在架标签中移除被拿走的标签
+                            this.tagList.Remove(tagkeyEpc);
 
                         }
                     }
@@ -356,21 +345,14 @@ namespace NodeRfid
                 }
 
                 //this.offDataCallback(this.goneList);
-                lock (goneList)
-                {
-                    Thread callback_thread = new Thread(new ParameterizedThreadStart(my_offDataCallback));
-                    callback_thread.IsBackground = true;
-                    callback_thread.Start(this.goneList);
-                }
-
-                Thread.Sleep(30);
+                my_offDataCallback(this.goneList);
 
             }
         }
 
-        void my_offDataCallback(object gonelist)
+        private async Task my_offDataCallback(object gonelist)
         {
-            offDataCallback((Dictionary<string, object> )gonelist);
+           await offDataCallback((Dictionary<string, object> )gonelist);
         }
 
 

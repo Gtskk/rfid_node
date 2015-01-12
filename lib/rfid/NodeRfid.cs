@@ -97,7 +97,7 @@ namespace NodeRfid
             }
 
             rs.GPIO_Config = null;
-            rs.Inventory_Time = 500;///盘点时间控制,盘点500ms
+            rs.Inventory_Time = 400;///盘点时间控制,盘点500ms
 
             rs.Region_List = RegionList.CCC;
 
@@ -108,7 +108,6 @@ namespace NodeRfid
             rs.RSSI_Filter.Enable =true;
             rs.RSSI_Filter.RSSIValue = rssi;
             #endregion
-
 
             rs.Tag_Group = new TagGroup();
             rs.Tag_Group.SessionTarget = SessionTarget.A;
@@ -122,6 +121,13 @@ namespace NodeRfid
                 return false;
             }
             #endregion
+
+            result = jwRe.RFID_Set_Fix_Frequency(frequency);
+            if (result != Result.OK)
+            {
+                this.logCallback("定频设置失败");
+                return false;
+            }
 
             return true;
         }
@@ -182,11 +188,11 @@ namespace NodeRfid
             Tag tag = args.tag;
             if (tag != null)
             {
-            	if(!(this.tagList.ContainsKey(tag.EPC))){//不存在列表中
+                if(!(this.tagList.ContainsKey(tag.EPC))){//不存在列表中
                     #region 新增列表
                     IDictionary<string, object> tagData = new Dictionary<string, object>();
                     tagData["time"] = DateTime.Now;
-                    tagData["count"] = 0;
+                    tagData["count"] = 1;
                     tagData["host"] = this.host;
                     tagData["data"] = tag;
 
@@ -195,9 +201,9 @@ namespace NodeRfid
                 }
                 else
                 {
-                    IDictionary<string, object> currentTag = (IDictionary<string, object>)this.tagList[tag.EPC];
-                    currentTag["count"] = (int)currentTag["count"] + 1;
-                    this.tagList[tag.EPC] = currentTag;
+                    IDictionary<string, object> tagData = (IDictionary<string, object>)tagList[tag.EPC];
+                    tagData["count"] = (int)tagData["count"] + 1;
+                    tagList[tag.EPC] = tagData;
                 }
             }//回调函数事情越少越好。
         }
@@ -240,9 +246,14 @@ namespace NodeRfid
                         IDictionary<string, object> tagVal = (IDictionary<string, object>)LastOnTagList[key];
                         if (!tagList.ContainsKey(key))//上次盘点数据不包含在本次数据中
                         {
-                            if((int)tagVal["count"] > 30)
+                            if((int)tagVal["count"] > 1)
                             {
                                 goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
+                            }
+                            else
+                            {
+                                if(((Tag)tagVal["data"]).RSSI > -70)
+                                    goneList.Add(key, tagVal);
                             }
                         }
                         else
@@ -278,7 +289,7 @@ namespace NodeRfid
         }
 
 
-        async Task my_offDataCallback(object gonelist)
+        private async Task my_offDataCallback(object gonelist)
         {
            await offDataCallback((Dictionary<string, object> )gonelist);
         }
