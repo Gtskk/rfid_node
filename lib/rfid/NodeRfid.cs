@@ -29,7 +29,6 @@ namespace NodeRfid
             JWReader jwRe = this.initConnect(input);
             if (jwRe != null && this.setReader((object[])input.antInfos, (float)input.rssi, (float)input.frequency, jwRe))
             {
-
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
                 // 关联读写器IP
@@ -201,9 +200,9 @@ namespace NodeRfid
                 }
                 else
                 {
-                    IDictionary<string, object> tagData = (IDictionary<string, object>)tagList[tag.EPC];
-                    tagData["count"] = (int)tagData["count"] + 1;
-                    tagList[tag.EPC] = tagData;
+                    IDictionary<string, object> tagDat = (IDictionary<string, object>)tagList[tag.EPC];
+                    tagDat["count"] = (int)tagDat["count"] + 1;
+                    tagList[tag.EPC] = tagDat;
                 }
             }//回调函数事情越少越好。
         }
@@ -246,14 +245,10 @@ namespace NodeRfid
                         IDictionary<string, object> tagVal = (IDictionary<string, object>)LastOnTagList[key];
                         if (!tagList.ContainsKey(key))//上次盘点数据不包含在本次数据中
                         {
-                            if((int)tagVal["count"] > 1)
+                            int checkCount = (int)tagVal["count"];                         
+                            if(checkCount > 1 || (checkCount <= 1 && ((Tag)tagVal["data"]).RSSI > -70))
                             {
                                 goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
-                            }
-                            else
-                            {
-                                if(((Tag)tagVal["data"]).RSSI > -70)
-                                    goneList.Add(key, tagVal);
                             }
                         }
                         else
@@ -284,14 +279,14 @@ namespace NodeRfid
 
         private async Task my_onDataCallback(object taglist)
         {
-            await onDataCallback((Dictionary<string, object> )taglist);
+            await onDataCallback((Dictionary<string, object>)taglist);
             
         }
 
 
         private async Task my_offDataCallback(object gonelist)
         {
-           await offDataCallback((Dictionary<string, object> )gonelist);
+           await offDataCallback((Dictionary<string, object>)gonelist);
         }
 
     }

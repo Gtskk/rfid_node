@@ -21,11 +21,12 @@ function spawn(service){
 	    logger.errorlogger.error('子进程中存在错误，错误信息为：' + data);
 	});
 
-	child.on('close', function (code) {
-		logger.errorlogger.error('子进程退出，状态码' + code);
-	});
+	// child.on('close', function (code) {
+	// 	logger.errorlogger.error('子进程退出，状态码' + code);
+	// });
 
 	child.on('exit', function(code){
+		logger.errorlogger.error('子进程退出，状态码' + code);
 		if(code != 0){
 			spawn(service);
 		}
