@@ -1,8 +1,9 @@
-var cp = require('child_process'),
-	redis = require('redis');
+var cp = require('child_process');
 
 // 引入日志记录
 var logger = require('./util/logger');
+// 引入redis
+var r = require('./lib/rfidRedis');
 
 var processlists = ['./lib/socket.js', './lib/tagCheck.js'];
 var processrun = [];
@@ -36,7 +37,6 @@ function spawn(service){
 // 程序主函数
 function main(){
 
-	var r = redis.createClient();
 	// 监听连接错误
 	r.on('error', function(er)
 	{
@@ -51,16 +51,16 @@ function main(){
             {
 	          	if (err) 
 	          	{
-	                return console.error('没有' + key);
+	                console.error('没有' + key);
 	            }
 	            if (pos === (keys.length - 1)) 
 	            {
-	                r.quit();
-	                r = null;
+	            	logger.debuglogger.debug('redis内存数据清理成功');
 	            }
             });
         });
-        logger.debuglogger.debug('redis内存数据清理成功');
+        r.quit();
+        r = null;
 	});
 
 	for (var i = 0; i < processlists.length; i++) {
