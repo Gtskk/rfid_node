@@ -5,10 +5,9 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using JW.UHF;
-using log4net;
-using JW.LOG;
-
-[assembly: log4net.Config.XmlConfigurator(Watch = true)]
+// 日志有关dll
+//using log4net;
+//using JW.LOG;
 
 namespace NodeRfid
 {
@@ -24,6 +23,7 @@ namespace NodeRfid
         /// </summary>
         public async Task<object> Open(dynamic input)
         {
+            // 记录日志的配置文件
             //JW.LOG.LogHelper.InitLogConfig(System.Environment.CurrentDirectory + "\\lib\\rfid\\log.xml");
             this.logCallback = (Func<object, Task<object>>)input.logCallback;
             JWReader jwRe = this.initConnect(input);
