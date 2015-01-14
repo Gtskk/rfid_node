@@ -5,7 +5,7 @@ var logger = require('./util/logger');
 // 引入redis
 var r = require('./lib/rfidRedis');
 
-var processlists = ['./lib/socket.js', './lib/tagCheck.js', './lib/rssi.js'];
+var processlists = ['./lib/socket.js', './lib/tagCheck.js'];
 var processrun = [];
 
 //守护进程函数
