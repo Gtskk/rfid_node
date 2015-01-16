@@ -32,7 +32,7 @@ namespace NodeRfid
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
                 // 关联读写器IP
-                ReaderData readerData = new ReaderData(input.host, jwRe, this.logCallback, (Func<object, Task<object>>)input.onDataCallback, (Func<object, Task<object>>)input.offDataCallback);
+                ReaderData readerData = new ReaderData(input.groupId, jwRe, this.logCallback, (Func<object, Task<object>>)input.onDataCallback, (Func<object, Task<object>>)input.offDataCallback);
 
                 // 开始盘点
                 readerData.startInventory();
@@ -144,7 +144,7 @@ namespace NodeRfid
 
         private bool stopInventoryFlag = false;//是否停止盘点标志
 
-        private string host;
+        private int group;
 
         private JWReader jwReader = null;
 
@@ -152,9 +152,9 @@ namespace NodeRfid
         private Func<object, Task<object>> onDataCallback;
         private Func<object, Task<object>> offDataCallback;
 
-        public ReaderData(string h, JWReader j, Func<object, Task<object>> l,Func<object, Task<object>> on, Func<object, Task<object>> off)
+        public ReaderData(int h, JWReader j, Func<object, Task<object>> l,Func<object, Task<object>> on, Func<object, Task<object>> off)
         {
-            host = h;
+            group = h;
             jwReader = j;
             logCallback = l;
             onDataCallback = on;
@@ -192,7 +192,7 @@ namespace NodeRfid
                     IDictionary<string, object> tagData = new Dictionary<string, object>();
                     tagData["time"] = DateTime.Now;
                     tagData["count"] = 1;
-                    tagData["host"] = this.host;
+                    tagData["group"] = this.group;
                     tagData["data"] = tag;
 
                     this.tagList.Add(tag.EPC, tagData);
@@ -278,6 +278,12 @@ namespace NodeRfid
 
                 Dictionary<string, object> uploadTagList = new Dictionary<string, object>(this.tagList);//在架Tag列表
                 Dictionary<string, object> uploadGoneList = new Dictionary<string, object>(this.goneList);//离架Tag列表
+                if(this.goneList.Count == 0)
+                {
+                    IDictionary<string, object> emptyData = new Dictionary<string, object>();
+                    emptyData["group"] = this.group;
+                    uploadGoneList.Add("group", emptyData);
+                }
                 //上传本次在架和离架数据，这里是重点，如果上传过程时间久（内部处理速度慢），就不能实时的捕捉到商品移动
                 my_onDataCallback(uploadTagList);
                 my_offDataCallback(uploadGoneList);
