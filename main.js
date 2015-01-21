@@ -58,10 +58,11 @@ function main(){
 		spawn(processlists[i]);
 	}
 
-	process.on('SIGTERM', function(){
+	process.on('SIGINT', function(){
 		for (var j = 0; j < processrun.length; j++) {
 			processrun[j].kill();
 		}
+		logger.debuglogger.debug('程序退出成功');
 		process.exit(0);
 	});
 
