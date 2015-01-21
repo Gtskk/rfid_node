@@ -96,7 +96,7 @@ namespace NodeRfid
             }
 
             rs.GPIO_Config = null;
-            rs.Inventory_Time = 400;///盘点时间控制,盘点500ms
+            rs.Inventory_Time = 500;///盘点时间控制,盘点500ms
 
             rs.Region_List = RegionList.CCC;
 

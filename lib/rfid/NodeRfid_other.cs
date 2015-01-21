@@ -5,6 +5,9 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using JW.UHF;
+// 日志有关dll
+//using log4net;
+//using JW.LOG;
 
 namespace NodeRfid
 {
@@ -20,11 +23,12 @@ namespace NodeRfid
         /// </summary>
         public async Task<object> Open(dynamic input)
         {
+            // 记录日志的配置文件
+            //JW.LOG.LogHelper.InitLogConfig(System.Environment.CurrentDirectory + "\\lib\\rfid\\log.xml");
             this.logCallback = (Func<object, Task<object>>)input.logCallback;
             JWReader jwRe = this.initConnect(input);
             if (jwRe != null && this.setReader((object[])input.antInfos, (float)input.rssi, (float)input.frequency, jwRe))
             {
-
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
                 // 关联读写器IP
@@ -92,7 +96,7 @@ namespace NodeRfid
             }
 
             rs.GPIO_Config = null;
-            rs.Inventory_Time = 0;
+            rs.Inventory_Time = 400;///盘点时间控制,盘点500ms
 
             rs.Region_List = RegionList.CCC;
 
@@ -104,12 +108,11 @@ namespace NodeRfid
             rs.RSSI_Filter.RSSIValue = rssi;
             #endregion
 
-
             rs.Tag_Group = new TagGroup();
             rs.Tag_Group.SessionTarget = SessionTarget.A;
             rs.Tag_Group.SearchMode = SearchMode.SINGLE_TARGET;
             rs.Tag_Group.Session = Session.S0;
-
+            
             result = jwRe.RFID_Set_Config(rs);
             if (result != Result.OK)
             {
@@ -117,6 +120,13 @@ namespace NodeRfid
                 return false;
             }
             #endregion
+
+            result = jwRe.RFID_Set_Fix_Frequency(frequency);
+            if (result != Result.OK)
+            {
+                this.logCallback("定频设置失败");
+                return false;
+            }
 
             return true;
         }
@@ -128,10 +138,9 @@ namespace NodeRfid
     // 读写器数据类
     class ReaderData
     {
-        Dictionary<string, object> tagList = new Dictionary<string, object>();//Tag列表
-        Dictionary<string, object> goneList = new Dictionary<string, object>();//Tag列表
-
-        private Queue<Tag> inventoryTagQueue = new Queue<Tag>();//盘点到Tag队列列表
+        private Dictionary<string, object> tagList = new Dictionary<string, object>();//在架Tag列表
+        private Dictionary<string, object> goneList = new Dictionary<string, object>();//离架Tag列表
+        private Dictionary<string, object> LastOnTagList = null;//上次在架数据
 
         private bool stopInventoryFlag = false;//是否停止盘点标志
 
@@ -158,34 +167,13 @@ namespace NodeRfid
         /// </summary>
         public void startInventory()
         {
-            clearInventoryData();//清空盘点数据
-
             stopInventoryFlag = false;
+            // 数据上报
+            jwReader.TagsReported += TagsReport;
 
-            Thread inventoryThread = new Thread(inventory);//盘点线程
-            inventoryThread.IsBackground=true;
-            inventoryThread.Start();
-
+            // 盘点操作
             Thread updateThread = new Thread(updateList);//更新列表线程
-            updateThread.IsBackground=true;
             updateThread.Start();
-
-            Thread checkGoneThread = new Thread(checkGone);//检查标签是否别拿走线程
-            checkGoneThread.IsBackground=true;;
-            checkGoneThread.Start();
-
-
-        }
-
-
-        /// <summary>
-        /// 清空盘点数据
-        /// </summary>
-        private void clearInventoryData()
-        {
-            inventoryTagQueue.Clear();
-            tagList.Clear();
-            goneList.Clear();
         }
 
 
@@ -197,18 +185,26 @@ namespace NodeRfid
         private void TagsReport(object sender, TagsEventArgs args)
         {
             Tag tag = args.tag;
-            inventoryTagQueue.Enqueue(tag);//回调函数事情越少越好。
-        }
+            if (tag != null)
+            {
+                if(!(this.tagList.ContainsKey(tag.EPC))){//不存在列表中
+                    #region 新增列表
+                    IDictionary<string, object> tagData = new Dictionary<string, object>();
+                    tagData["time"] = DateTime.Now;
+                    tagData["count"] = 1;
+                    tagData["host"] = this.host;
+                    tagData["data"] = tag;
 
-
-        /// <summary>
-        /// 盘点线程
-        /// </summary>
-        private void inventory()
-        {
-            jwReader.TagsReported += TagsReport;
-            //盘点
-            jwReader.RFID_Start_Inventory();
+                    this.tagList.Add(tag.EPC, tagData);
+                    #endregion
+                }
+                else
+                {
+                    IDictionary<string, object> tagDat = (IDictionary<string, object>)tagList[tag.EPC];
+                    tagDat["count"] = (int)tagDat["count"] + 1;
+                    tagList[tag.EPC] = tagDat;
+                }
+            }//回调函数事情越少越好。
         }
 
 
@@ -224,137 +220,87 @@ namespace NodeRfid
 
 
         /// <summary>
-        /// 更新列表线程
+        /// 处理数据
         /// </summary>
         private void updateList()
         {
             while (!stopInventoryFlag)//未停止
             {
-                updateInventoryGridList();
-                Thread.Sleep(10);
-            }
+                tagList.Clear();
+                goneList.Clear();
 
-            /*DateTime dt = DateTime.Now;
-            while (true)
-            {
-                updateInventoryGridList();
-                //500毫秒内确定没有包了 防止线程提前结束 有些盘点包还没处理完 可保证该线程最后结束。
-                if (inventoryTagQueue.Count == 0 && UtilD.DateDiffMillSecond(DateTime.Now, dt) > 500)
-                    break;
-            }*/
-        }
+                // 同步模式盘点
+                jwReader.RFID_Start_Inventory();
 
-        /// <summary>
-        /// 更新列表
-        /// </summary>
-        private void updateInventoryGridList()
-        {
-            while (inventoryTagQueue.Count > 0)
-            {
-                if (inventoryTagQueue.Count > 0)
+                if(LastOnTagList == null)
+                {// 代表第一次读取，上次在架数据为空
+                    LastOnTagList = new Dictionary<string, object>(tagList);//将本次读到商品暂存起来
+                }
+                else
                 {
-                    lock (tagList)
+                    string[] lastKeys = new string[this.LastOnTagList.Count];
+                    this.LastOnTagList.Keys.CopyTo(lastKeys, 0);
+                    foreach (string key in lastKeys)
                     {
-                        Tag packet = inventoryTagQueue.Dequeue();
-                        String epc = packet.EPC;
-
-                        // 移除又能被盘点上的标签
-                        if (this.goneList.ContainsKey(epc))
+                        IDictionary<string, object> tagVal = (IDictionary<string, object>)LastOnTagList[key];
+                        if (!tagList.ContainsKey(key))//上次盘点数据不包含在本次数据中
                         {
-                            this.goneList.Remove(epc);
-                        }
-
-                        if (this.tagList.ContainsKey(epc))
-                        {
-                            IDictionary<string, object> currentTag = (IDictionary<string, object>)this.tagList[epc];
-                            currentTag["time"] = DateTime.Now;
-                            currentTag["count"] = (int)currentTag["count"] + 1;
-                            this.tagList[epc] = currentTag;
+                            int checkCount = (int)tagVal["count"];                         
+                            if(checkCount > 1)
+                            {
+                                goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
+                            }
+                            else
+                            {
+                                if(((Tag)tagVal["data"]).RSSI > -70)
+                                {
+                                    goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
+                                }
+                            }
                         }
                         else
                         {
-                            #region 新增列表
-                            IDictionary<string, object> tagData = new Dictionary<string, object>();
-                            tagData["time"] = DateTime.Now;
-                            tagData["count"] = 0;
-                            tagData["host"] = this.host;
-                            tagData["data"] = packet;
-
-                            this.tagList.Add(epc, tagData);
-                            #endregion
+                            LastOnTagList[key] = tagList[key];
                         }
                     }
                 }
 
-                //Thread callback_thread=new Thread(new ParameterizedThreadStart (my_onDataCallback));
-                //callback_thread.IsBackground=true;
-                //callback_thread.Start(this.tagList);
+                // 对在架数据的处理（主要是新增标签这块）
+                string[] tagkeyEpcs = new string[this.tagList.Count];
+                this.tagList.Keys.CopyTo(tagkeyEpcs, 0);
+                foreach (string tagkeyEpc in tagkeyEpcs)
+                {
+                    if (!LastOnTagList.ContainsKey(tagkeyEpc))//上次盘点数据不包含在本次数据中
+                    {
+                        LastOnTagList.Add(tagkeyEpc, tagList[tagkeyEpc]); // 添加新增的标签
+                    }
+                }
+
+                Dictionary<string, object> uploadTagList = new Dictionary<string, object>(this.tagList);//在架Tag列表
+                Dictionary<string, object> uploadGoneList = new Dictionary<string, object>(this.goneList);//离架Tag列表
+                if(this.goneList.Count == 0)
+                {
+                    IDictionary<string, object> emptyData = new Dictionary<string, object>();
+                    emptyData["host"] = this.host;
+                    uploadGoneList.Add("host", emptyData);
+                }
+                //上传本次在架和离架数据，这里是重点，如果上传过程时间久（内部处理速度慢），就不能实时的捕捉到商品移动
+                my_onDataCallback(uploadTagList);
+                my_offDataCallback(uploadGoneList);
             }
-            
-            my_onDataCallback(this.tagList);
-
         }
-
 
         private async Task my_onDataCallback(object taglist)
         {
-            await onDataCallback((Dictionary<string, object> )taglist);
-        }
-
-
-        /// <summary>
-        /// 检查标签是否被拿走
-        /// </summary>
-        private void checkGone()
-        {
+            await onDataCallback((Dictionary<string, object>)taglist);
             
-            while (!stopInventoryFlag)//未停止
-            {
-                lock(tagList)
-                {
-                    string[] tagkeyEpcs = new string[this.tagList.Count];
-                    this.tagList.Keys.CopyTo(tagkeyEpcs, 0);
-                    foreach (string tagkeyEpc in tagkeyEpcs)
-                    {
-                        IDictionary<string, object> val = (IDictionary<string, object>)this.tagList[tagkeyEpc];
-                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 300 && (int)val["count"] > 10)
-                        {
-                            val["time"] = DateTime.Now;
-                            this.goneList[tagkeyEpc] = val;
-                            // 从在架标签中移除被拿走的标签
-                            this.tagList.Remove(tagkeyEpc);
-
-                        }
-                    }
-                }
-
-                lock(goneList)
-                {
-                    string[] keyEpcs = new string[this.goneList.Count];
-                    this.goneList.Keys.CopyTo(keyEpcs, 0);
-                    foreach (string keyEpc in keyEpcs)
-                    {
-
-                        // 从离架标签中移除被拿走特定时间后没拿回来的标签
-                        IDictionary<string, object> val = (IDictionary<string, object>)this.goneList[keyEpc];
-                        if (UtilD.DateDiffMillSecond(DateTime.Now, (DateTime)val["time"]) > 30000)
-                        {
-                            this.goneList.Remove(keyEpc);
-                        }
-                    }
-                }
-
-                //this.offDataCallback(this.goneList);
-                my_offDataCallback(this.goneList);
-
-            }
         }
+
 
         private async Task my_offDataCallback(object gonelist)
         {
-           await offDataCallback((Dictionary<string, object> )gonelist);
+           await offDataCallback((Dictionary<string, object>)gonelist);
         }
-
 
     }
 
