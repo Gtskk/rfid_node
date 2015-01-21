@@ -96,7 +96,7 @@ namespace NodeRfid
             }
 
             rs.GPIO_Config = null;
-            rs.Inventory_Time = 500;///盘点时间控制,盘点500ms
+            rs.Inventory_Time = 400;///盘点时间控制,盘点500ms
 
             rs.Region_List = RegionList.CCC;
 
@@ -208,16 +208,6 @@ namespace NodeRfid
         }
 
 
-        /// <summary>
-        /// 停止盘点
-        /// </summary>
-        /*private void stopBtn_Click()
-        {
-            jwReader.RFID_Stop_Inventory();//停止当前UHF操作
-            jwReader.TagsReported -= TagsReport;
-            stopInventoryFlag = true;
-        }*/
-
 
         /// <summary>
         /// 处理数据
@@ -230,7 +220,12 @@ namespace NodeRfid
                 goneList.Clear();
 
                 // 同步模式盘点
-                jwReader.RFID_Start_Inventory();
+                Result res = jwReader.RFID_Start_Inventory();
+		if(res != Result.OK)
+		{
+			this.logCallback("gtskkwangluoyichang");
+			break;
+		}
 
                 if(LastOnTagList == null)
                 {// 代表第一次读取，上次在架数据为空
