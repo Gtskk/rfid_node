@@ -221,7 +221,6 @@ namespace NodeRfid
 
                 // 同步模式盘点
                 Result res = jwReader.RFID_Start_Inventory();
-		this.logCallback(res);
 		if(res == Result.Network_Exception)
 		{
 			this.logCallback("gtskkwangluoyichang");
