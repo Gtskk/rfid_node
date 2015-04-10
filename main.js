@@ -25,7 +25,7 @@ function spawn(service){
 	child.on('exit', function(code){
 		logger.errorlogger.error('子进程退出，状态码' + code);
 		if(code != 0){
-			if(code == 2)
+			if(code == 1 || code == 2)
 				setTimeout(spawn(service), 5000);// 延迟5秒以便之前的资源释放
 			else
 				spawn(service);
