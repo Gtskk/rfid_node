@@ -121,6 +121,13 @@ namespace NodeRfid
             }
             #endregion
 
+	    // 修改天线驻留时间
+	    //jwRe.RFID_Set_DWellTime(100);
+	    /*jwRe.Set_Running_Mode(RunningMode.COMMAND);
+            byte[] sendData={0xCA,0x64,0x64,0x64,0x64};
+            jwRe.Send_Command(sendData);
+            jwRe.Set_Running_Mode(RunningMode.API);*/
+
             result = jwRe.RFID_Set_Fix_Frequency(frequency);
             if (result != Result.OK)
             {
@@ -230,6 +237,7 @@ namespace NodeRfid
                 if(LastOnTagList == null)
                 {// 代表第一次读取，上次在架数据为空
                     LastOnTagList = new Dictionary<string, object>(tagList);//将本次读到商品暂存起来
+                    my_onDataCallback(LastOnTagList);
                 }
                 else
                 {
@@ -279,8 +287,12 @@ namespace NodeRfid
                     emptyData["group"] = this.group;
                     uploadGoneList.Add("group", emptyData);
                 }
-                //上传本次在架和离架数据，这里是重点，如果上传过程时间久（内部处理速度慢），就不能实时的捕捉到商品移动
-                my_onDataCallback(uploadTagList);
+		else
+		{
+                   //当离架数据不为空时才上传本次在架数据
+                    my_onDataCallback(uploadTagList);
+		}
+                //上传本次离架数据，这里是重点，如果上传过程时间久（内部处理速度慢），就不能实时的捕捉到商品移动
                 my_offDataCallback(uploadGoneList);
             }
         }
