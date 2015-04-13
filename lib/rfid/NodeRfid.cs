@@ -27,7 +27,7 @@ namespace NodeRfid
             // JW.LOG.LogHelper.InitLogConfig(System.Environment.CurrentDirectory + "/lib/rfid/log.xml");
             this.logCallback = (Func<object, Task<object>>)input.logCallback;
             JWReader jwRe = this.initConnect(input);
-            if (jwRe != null && this.setReader((object[])input.antInfos, (float)input.rssi, (float)input.frequency, jwRe))
+            if (jwRe != null && this.setReader((object[])input.antInfos, (float)input.rssi, (float)input.frequency, (int)input.stay_time, (int)input.inventory_time,  jwRe))
             {
                 this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
@@ -80,7 +80,7 @@ namespace NodeRfid
         /// <summary>
         /// 配置读写器
         /// </summary>
-        private bool setReader(object[] antInfos, float rssi, float frequency, JWReader jwRe)
+        private bool setReader(object[] antInfos, float rssi, float frequency, int stay_time, int inventory_time, JWReader jwRe)
         {
             #region 配置模块
             Result result = Result.OK;
@@ -96,7 +96,7 @@ namespace NodeRfid
             }
 
             rs.GPIO_Config = null;
-            rs.Inventory_Time = 400;///盘点时间控制,盘点500ms
+            rs.Inventory_Time = inventory_time;///盘点时间控制,盘点500ms
 
             rs.Region_List = RegionList.CCC;
 
@@ -122,7 +122,7 @@ namespace NodeRfid
             #endregion
 
 	    // 修改天线驻留时间
-	    jwRe.RFID_Set_DWellTime(100);
+	    jwRe.RFID_Set_DWellTime(stay_time);
 	    /*jwRe.Set_Running_Mode(RunningMode.COMMAND);
             byte[] sendData={0xCA,0x64,0x64,0x64,0x64};
             jwRe.Send_Command(sendData);
