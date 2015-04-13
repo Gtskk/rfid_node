@@ -1,4 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+
+<configSections>
+	<section name="log4net" type="log4net.Config.Log4NetConfigurationSectionHandler, log4net"/>
+</configSections>
 
 <!-- Log4net配置设定 -->
 
@@ -7,7 +12,7 @@
   <appender name="RollingLogFileAppender" type="log4net.Appender.RollingFileAppender">
     <!--RollingFileAppender将日志以回滚文件的形式写到文件中-->
 
-    <file value="D:/project/RFID/logs/uhf.log" />
+    <file value="/Data/code/rfid/logs/uhf.log" />
     <!--输出日志文件的路径-->
 
     <appendToFile value="true" />
@@ -44,5 +49,4 @@
   </root>
 
 </log4net>
-
-
+</configuration>

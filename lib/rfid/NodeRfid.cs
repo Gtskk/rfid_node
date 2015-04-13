@@ -24,7 +24,7 @@ namespace NodeRfid
         public async Task<object> Open(dynamic input)
         {
             // 记录日志的配置文件
-            //JW.LOG.LogHelper.InitLogConfig(System.Environment.CurrentDirectory + "\\lib\\rfid\\log.xml");
+            // JW.LOG.LogHelper.InitLogConfig(System.Environment.CurrentDirectory + "/lib/rfid/log.xml");
             this.logCallback = (Func<object, Task<object>>)input.logCallback;
             JWReader jwRe = this.initConnect(input);
             if (jwRe != null && this.setReader((object[])input.antInfos, (float)input.rssi, (float)input.frequency, jwRe))
@@ -122,7 +122,7 @@ namespace NodeRfid
             #endregion
 
 	    // 修改天线驻留时间
-	    //jwRe.RFID_Set_DWellTime(100);
+	    jwRe.RFID_Set_DWellTime(100);
 	    /*jwRe.Set_Running_Mode(RunningMode.COMMAND);
             byte[] sendData={0xCA,0x64,0x64,0x64,0x64};
             jwRe.Send_Command(sendData);
