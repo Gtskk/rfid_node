@@ -32,7 +32,7 @@ namespace NodeRfid
 				this.logCallback("读写器"+input.host+"连接成功啦！^-^");
 
 				// 关联读写器IP
-				ReaderData readerData = new ReaderData(input.groupId, jwRe, this.logCallback, (Func<object, Task<object>>)input.onDataCallback, (Func<object, Task<object>>)input.offDataCallback);
+				ReaderData readerData = new ReaderData(input.host, input.groupId, jwRe, this.logCallback, (Func<object, Task<object>>)input.onDataCallback, (Func<object, Task<object>>)input.offDataCallback);
 
 				// 开始盘点
 				readerData.startInventory();
@@ -151,6 +151,7 @@ namespace NodeRfid
 
 		private bool stopInventoryFlag = false;//是否停止盘点标志
 
+		private string host;
 		private int group;
 
 		private JWReader jwReader = null;
@@ -159,9 +160,10 @@ namespace NodeRfid
 		private Func<object, Task<object>> onDataCallback;
 		private Func<object, Task<object>> offDataCallback;
 
-		public ReaderData(int h, JWReader j, Func<object, Task<object>> l,Func<object, Task<object>> on, Func<object, Task<object>> off)
+		public ReaderData(string h, int g, JWReader j, Func<object, Task<object>> l,Func<object, Task<object>> on, Func<object, Task<object>> off)
 		{
-			group = h;
+			host = h;
+			group = g;
 			jwReader = j;
 			logCallback = l;
 			onDataCallback = on;
@@ -199,6 +201,7 @@ namespace NodeRfid
 					IDictionary<string, object> tagData = new Dictionary<string, object>();
 					tagData["time"] = DateTime.Now;
 					tagData["count"] = 1;
+					tagData["host"] = this.host;
 					tagData["group"] = this.group;
 					tagData["data"] = tag;
 
