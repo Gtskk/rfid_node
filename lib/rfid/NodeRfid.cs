@@ -249,17 +249,10 @@ namespace NodeRfid
 						if (!tagList.ContainsKey(key))//上次盘点数据不包含在本次数据中
 						{
 							int checkCount = (int)tagVal["count"];                         
-							if(checkCount > 1 || ((Tag)tagVal["data"]).RSSI > -58)
+							if(checkCount > 1 || ((Tag)tagVal["data"]).RSSI > -60)
 							{
 								goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
 							}
-							/*else
-							{
-								if(((Tag)tagVal["data"]).RSSI < -60)
-								{
-									goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
-								}
-							}*/
 						}
 						else
 						{
