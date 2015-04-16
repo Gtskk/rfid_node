@@ -123,10 +123,6 @@ namespace NodeRfid
 
 			// 修改天线驻留时间
 		   	jwRe.RFID_Set_DWellTime(stay_time);
-		   	/*jwRe.Set_Running_Mode(RunningMode.COMMAND);
-			byte[] sendData={0xCA,0x64,0x64,0x64,0x64};
-			jwRe.Send_Command(sendData);
-			jwRe.Set_Running_Mode(RunningMode.API);*/
 
 			result = jwRe.RFID_Set_Fix_Frequency(frequency);
 			if (result != Result.OK)

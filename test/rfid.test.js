@@ -5,7 +5,7 @@ describe('tests/rfid.test.js', function(){
 	it('应该返回真', function(){
 		var r = new Rfid();
 		var param = {
-			host: '172.16.13.174',
+			host: '172.16.13.82',
 			// host: 'COM3',
 			port: 9761,
 			antInfos: [

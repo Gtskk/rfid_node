@@ -1,34 +1,34 @@
 {
-  "name": "RFID",
-  "version": "1.0.0",
-  "description": "RFID package with nodejs",
-  "main": "main.js",
-  "scripts": {
-    "start": "pm2 start main.js --name rfid-server --max-memory-restart 500M -x",
-    "test": "./node_modules/.bin/mocha"
-  },
-  "keywords": [
-    "RFID"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Gtskk/rfid_node"
-  },
-  "author": "gtskk",
-  "license": "MIT",
-  "directories": {
-    "doc": "doc",
-    "test": "test"
-  },
-  "dependencies": {
-    "async": "^0.9.0",
-    "edge": "^0.10.1",
-    "edge-cs": "^0.2.7",
-    "log4js": "^0.6.21",
-    "redis": "^0.12.1"
-  },
-  "devDependencies": {
-    "mocha": "^2.0.1",
-    "should": "^4.1.0"
-  }
+	"name": "RFID",
+	"version": "1.0.0",
+	"description": "RFID package with nodejs",
+	"main": "main.js",
+	"scripts": {
+		"start": "pm2 start main.js --name rfid-server --max-memory-restart 500M -x",
+		"test": "./node_modules/.bin/mocha"
+	},
+	"keywords": [
+		"RFID"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Gtskk/rfid_node"
+	},
+	"author": "gtskk",
+	"license": "MIT",
+	"directories": {
+		"doc": "doc",
+		"test": "test"
+	},
+	"dependencies": {
+		"async": "^0.9.0",
+		"edge": "^0.10.1",
+		"edge-cs": "^0.2.7",
+		"log4js": "^0.6.21",
+		"redis": "^0.12.1"
+	},
+	"devDependencies": {
+		"mocha": "^2.0.1",
+		"should": "^4.1.0"
+	}
 }
