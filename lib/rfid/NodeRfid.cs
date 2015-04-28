@@ -279,11 +279,9 @@ namespace NodeRfid
 					emptyData["group"] = this.group;
 					uploadGoneList.Add("group", emptyData);
 				}
-		else
-		{
-				   //当离架数据不为空时才上传本次在架数据
-					my_onDataCallback(uploadTagList);
-		}
+
+                //上传本次在架数据
+                my_onDataCallback(uploadTagList);
 				//上传本次离架数据，这里是重点，如果上传过程时间久（内部处理速度慢），就不能实时的捕捉到商品移动
 				my_offDataCallback(uploadGoneList);
 			}
