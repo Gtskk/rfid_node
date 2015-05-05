@@ -195,11 +195,13 @@ namespace NodeRfid
 				if(!(this.tagList.ContainsKey(tag.EPC))){//不存在列表中
 					#region 新增列表
 					IDictionary<string, object> tagData = new Dictionary<string, object>();
+					tagData["epc"] = tag.EPC;
+					tagData["rssi"] = tag.RSSI;
+					tagData["port"] = tag.PORT;
 					tagData["time"] = DateTime.Now;
 					tagData["count"] = 1;
 					tagData["host"] = this.host;
 					tagData["group"] = this.group;
-					tagData["data"] = tag;
 
 					this.tagList.Add(tag.EPC, tagData);
 					#endregion
@@ -247,8 +249,7 @@ namespace NodeRfid
 						IDictionary<string, object> tagVal = (IDictionary<string, object>)LastOnTagList[key];
 						if (!tagList.ContainsKey(key))//上次盘点数据不包含在本次数据中
 						{
-							int checkCount = (int)tagVal["count"];                         
-							if(checkCount > 1 || ((Tag)tagVal["data"]).RSSI > -60)
+							if((int)tagVal["count"] > 1 || tagVal["rssi"] > -60)
 							{
 								goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
 							}
