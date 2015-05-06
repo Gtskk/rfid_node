@@ -11,13 +11,7 @@
 		"db": 0
 	},
 	"tag": {
-		"online_max_time": 3,
-		"online_min_time": 3,
-		"workline_time": 0,
-		"workline_stop_time": 0.5,
-		"workline_max_time": 30,
-		"workline_min_time": 0.95,
-		"offline_max_time": 31
+		"clear_time": 30000
 	},
 	"webFlag": true
 

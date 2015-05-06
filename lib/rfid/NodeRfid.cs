@@ -249,7 +249,7 @@ namespace NodeRfid
 						IDictionary<string, object> tagVal = (IDictionary<string, object>)LastOnTagList[key];
 						if (!tagList.ContainsKey(key))//上次盘点数据不包含在本次数据中
 						{
-							if((int)tagVal["count"] > 1 || tagVal["rssi"] > -60)
+							if((int)tagVal["count"] > 1 || (float)tagVal["rssi"] > -60)
 							{
 								goneList.Add(key, tagVal);//将上次盘点数据放到离架数据中
 							}

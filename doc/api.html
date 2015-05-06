@@ -59,7 +59,11 @@
   </li>
 
   <li>
-    <a href="#api_monitor"><i class="icon-chevron-right"></i>monitor</a>
+    <a href="#api_rfidRedis"><i class="icon-chevron-right"></i>rfidRedis</a>
+  </li>
+
+  <li>
+    <a href="#api_rssi"><i class="icon-chevron-right"></i>rssi</a>
   </li>
 
   <li>
@@ -72,6 +76,10 @@
 
   <li>
     <a href="#api_tagCheck"><i class="icon-chevron-right"></i>tagCheck</a>
+  </li>
+
+  <li>
+    <a href="#api_tagCheck_backup20150416"><i class="icon-chevron-right"></i>tagCheck_backup20150416</a>
   </li>
 
   <li>
@@ -88,55 +96,46 @@
   <ul class="indexs">
   
     <li>
-      <a href="#config_this_groups">groups</a>
+      <a href="#config__readers">readers</a>
     </li>
 
     <li>
-      <a href="#config_this_readers">readers</a>
-    </li>
-
-    <li>
-      <a href="#config_this_ants">ants</a>
+      <a href="#config__ants">ants</a>
     </li>
 
   </ul>
   <hr />
 
   
-  <h3 data-id="config_this_groups">
-    groups
-  </h3>
-  
-
-  <p>组数据</p>
 
   <table class="table table-striped table-bordered table-hover table-condensed">
-  
-    <tr>
-      <td>属性</td>
-      <td>this.groups</td> 
-      <td>this</td>
-      <td>groups</td>
-    </tr>
   
 
   
   </table>
   
   
-  <h3 data-id="config_this_readers">
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="config__readers">
     readers
   </h3>
   
 
-  <p>读写器数据<br />readerIp: 读写器IP地址<br />rssi: 读写器RSSI值限定<br />frequency: 读写器定频设置</p>
+  <p>读写器数据</p><p>readerId: 读写器ID<br />readerIp: 读写器IP地址<br />rssi: 读写器RSSI限定值<br />frequency: 读写器定频设置<br />stay_time: 天线驻留时长<br />inventory_time: 读写器盘点时长</p>
 
   <table class="table table-striped table-bordered table-hover table-condensed">
   
     <tr>
-      <td>属性</td>
-      <td>this.readers</td> 
-      <td>this</td>
+      <td>声明</td>
+      <td>readers</td> 
+      <td></td>
       <td>readers</td>
     </tr>
   
@@ -145,21 +144,39 @@
   </table>
   
   
-  <h3 data-id="config_this_ants">
+  <h3 data-id="config__ants">
     ants
   </h3>
   
 
-  <p>读写器天线数据<br />groupId: 组ID<br />readerId: 读写器ID<br />antId: 天线ID(0-3)<br />nPower: 天线功率</p>
+  <p>读写器天线数据</p><p>antId: 天线ID（0-3）<br />readerId: 读写器ID<br />groupId: 组ID<br />nPower: 天线功率</p>
 
   <table class="table table-striped table-bordered table-hover table-condensed">
   
     <tr>
-      <td>属性</td>
-      <td>this.ants</td> 
-      <td>this</td>
+      <td>声明</td>
+      <td>ants</td> 
+      <td></td>
       <td>ants</td>
     </tr>
+  
+
+  
+  </table>
+  
+  
+
+  <p>this.groupsInfo = {};</p><p>// 获得组信息<br />this.getGroupsInfo = function()<br />{<br />    var m = 0;<br />    for (var i = 0; i &lt; this.groups.length; i++)<br />    {<br />        var group = this.groups[i];<br />        var groupId = group.groupId;<br />        this.groupsInfo[groupId] = [];<br />        for (var j = 0; j &lt; this.ants.length; j++)<br />        {<br />            var ant = this.ants[j];<br />            if(group.groupId == ant.groupId)<br />            {<br />                for (var k = 0; k &lt; this.readers.length; k++)<br />                {<br />                    var reader = this.readers[k];<br />                    if (reader[&#39;readerId&#39;] == ant[&#39;readerId&#39;])<br />                    {<br />                        var info = {<br />                            antId: ant[&#39;antId&#39;],<br />                            readerIp: reader[&#39;readerIp&#39;]<br />                        };<br />                        this.groupsInfo[groupId].push(info);<br />                    }<br />                }<br />            }<br />        }</p><pre><code>    if(!this.groupsInfo[groupId].length)
+    {
+        delete this.groupsInfo[groupId];
+    }
+
+    this.groups[m] = group;
+    m++;
+}
+</code></pre><p>};</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
   
 
   
@@ -203,18 +220,68 @@
 </section>
 
       
-        <section id="api_monitor" class="api">
-  <h2>monitor: API索引</h2>
+        <section id="api_rfidRedis" class="api">
+  <h2>rfidRedis: API索引</h2>
   <ul class="indexs">
   
+    <li>
+      <a href="#rfidRedis__redis">redis</a>
+    </li>
+
   </ul>
   <hr />
 
+  
+  <h3 data-id="rfidRedis__redis">
+    redis
+  </h3>
   
 
   
 
   <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>声明</td>
+      <td>redis</td> 
+      <td></td>
+      <td>redis</td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_rssi" class="api">
+  <h2>rssi: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#rssi__RssiCalc">RssiCalc</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="rssi__RssiCalc">
+    RssiCalc
+  </h3>
+  
+
+  <p>标签RSSI计算模块</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>RssiCalc()</td> 
+      <td></td>
+      <td>RssiCalc</td>
+    </tr>
   
 
   
@@ -229,6 +296,22 @@
   
     <li>
       <a href="#service__process">process</a>
+    </li>
+
+    <li>
+      <a href="#service__getCommand">getCommand</a>
+    </li>
+
+    <li>
+      <a href="#service__getTagsList">getTagsList</a>
+    </li>
+
+    <li>
+      <a href="#service__getMillTimeDiffNow">getMillTimeDiffNow</a>
+    </li>
+
+    <li>
+      <a href="#service__output">output</a>
     </li>
 
   </ul>
@@ -263,6 +346,177 @@
       <td>返回</td>
       <td>String</td>
       <td colspan="2">返回标签列表的序列化字符串</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="service__getCommand">
+    getCommand
+  </h3>
+  
+
+  <p>读取命令结果</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>getCommand()</td> 
+      <td></td>
+      <td>getCommand</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>data(String)</td>
+      <td colspan="2">传入的数据</td>
+    </tr>
+  
+
+    <tr>
+      <td>undefined</td>
+      <td>Object</td>
+      <td>undefined</td>
+      <td>params 解析出来的数据对象</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="service__getTagsList">
+    getTagsList
+  </h3>
+  
+
+  <p>获取标签列表</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>getTagsList()</td> 
+      <td></td>
+      <td>getTagsList</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>ct(String)</td>
+      <td colspan="2">命令类型</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>groupId(Number)</td>
+      <td colspan="2">组ID</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>state(String)</td>
+      <td colspan="2">所要获取的标签状态</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>callback(Function)</td>
+      <td colspan="2">回调函数</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="service__getMillTimeDiffNow">
+    getMillTimeDiffNow
+  </h3>
+  
+
+  <p>获取指定时间和当前时间的差异</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>getMillTimeDiffNow()</td> 
+      <td></td>
+      <td>getMillTimeDiffNow</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>val(Number)</td>
+      <td colspan="2">指定的时间</td>
+    </tr>
+  
+
+    <tr>
+      <td>undefined</td>
+      <td>Number</td>
+      <td>undefined</td>
+      <td>int 时间差（单位：毫秒）</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="service__output">
+    output
+  </h3>
+  
+
+  <p>格式化输出内容</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>output()</td> 
+      <td></td>
+      <td>output</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>commandType(String)</td>
+      <td colspan="2">命令类型</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>code(Number)</td>
+      <td colspan="2">状态码</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>data(Object)</td>
+      <td colspan="2">数据</td>
+    </tr>
+  
+
+    <tr>
+      <td>undefined</td>
+      <td>String</td>
+      <td>undefined</td>
+      <td>JSON.stringify(res)</td>
     </tr>
   
 
@@ -316,7 +570,11 @@
     </li>
 
     <li>
-      <a href="#tagCheck__getGroupId">getGroupId</a>
+      <a href="#tagCheck__online">online</a>
+    </li>
+
+    <li>
+      <a href="#tagCheck__offline">offline</a>
     </li>
 
   </ul>
@@ -344,21 +602,136 @@
   </table>
   
   
-  <h3 data-id="tagCheck__getGroupId">
-    getGroupId
+  <h3 data-id="tagCheck__online">
+    online
   </h3>
   
 
-  <p>根据读写器ip和天线端口获取组ID</p>
+  <p>检查在架标签</p>
 
   <table class="table table-striped table-bordered table-hover table-condensed">
   
     <tr>
       <td>函数</td>
-      <td>getGroupId()</td> 
+      <td>online()</td> 
       <td></td>
-      <td>getGroupId</td>
+      <td>online</td>
     </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>读写器实例(rf)</td>
+      <td colspan="2"></td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+  <h3 data-id="tagCheck__offline">
+    offline
+  </h3>
+  
+
+  <p>检查离架标签</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>offline()</td> 
+      <td></td>
+      <td>offline</td>
+    </tr>
+  
+
+    <tr>
+      <td>参数</td>
+      <td>读写器实例(rf)</td>
+      <td colspan="2"></td>
+    </tr>
+  
+
+  
+  </table>
+  
+</section>
+
+      
+        <section id="api_tagCheck_backup20150416" class="api">
+  <h2>tagCheck_backup20150416: API索引</h2>
+  <ul class="indexs">
+  
+    <li>
+      <a href="#tagCheck_backup20150416__main">main</a>
+    </li>
+
+  </ul>
+  <hr />
+
+  
+  <h3 data-id="tagCheck_backup20150416__main">
+    main
+  </h3>
+  
+
+  <p>标签检查模块</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+    <tr>
+      <td>函数</td>
+      <td>main()</td> 
+      <td></td>
+      <td>main</td>
+    </tr>
+  
+
+  
+  </table>
+  
+  
+
+  <p>rfid.open(param, function(dat) {<br />            if(dat)<br />            {<br />                for (var j = 0; j &lt; funclists.length; j++)<br />                {<br />                    funclists<a href="rfid">j</a>;<br />                }<br />            }<br />            else<br />            {<br />                logger.errorlogger.error(&#39;连接读写器&#39;+ip+&#39;错误&#39;);<br />                process.exit(1);<br />            }<br />        });</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+
+  
+  </table>
+  
+  
+
+  <p>r.llen(epc, function(err, len)<br />            {<br />                if(err) next(err, onEpc);<br />                if(len &lt; 50)<br />                {<br />                    var returnEpc = returnDatas[epc];<br />                    r.lpush(epc, returnEpc.data.RSSI, function(){});<br />                }<br />                else if(len == 50)<br />                {<br />                    var rssi = new RssiCalc();<br />                    rssi.on(&#39;rssiCalc&#39;, function()<br />                    {<br />                        rssi.proc(epc);<br />                    });<br />                    rssi.rssiCalcCallback();<br />                }<br />            });</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+
+  
+  </table>
+  
+  
+
+  <p>r.hget(&#39;rssiRef&#39;, epc, function(e, rssiRef)<br />            {<br />                var offEpc = null;<br />                var returnEpc = returnDatas[epc];<br />                groupId = returnEpc.group;<br />                if(returnEpc.data)<br />                {<br />                    var epcRssi = returnEpc.data.RSSI;<br />                    if(groupId != null)<br />                    {<br />                        offEpc = returnEpc;<br />                    }<br />                }</p><pre><code>            if(e) 
+                next(e, offEpc);
+            else 
+                next(null, offEpc);
+        });
+</code></pre>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
+  
+
+  
+  </table>
+  
+  
+
+  <p>根据读写器ip和天线端口获取组ID</p>
+
+  <table class="table table-striped table-bordered table-hover table-condensed">
   
 
     <tr>
@@ -405,7 +778,7 @@
   </h3>
   
 
-  <p>通过edgejs控制RFID模块</p>
+  <p>通过edgejs控制RFID模块<br />继承EventEmitter内部模块，然后调用emit和on的方式去监听<br />读写器信息的变化</p>
 
   <table class="table table-striped table-bordered table-hover table-condensed">
   
